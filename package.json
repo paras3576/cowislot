@@ -1,0 +1,31 @@
+{
+  "name": "cowin",
+  "version": "1.0.0",
+  "description": "Cowin Vaccine Help App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "example",
+    "data"
+  ],
+  "author": "Paras",
+  "license": "MIT",
+  "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "cors": "^2.8.5",
+    "dotenv": "^9.0.2",
+    "express": "^4.17.1",
+    "nedb": "^1.8.0",
+    "next-absolute-url": "^1.2.2",
+    "node-fetch": "^2.6.1",
+    "node-schedule": "^2.0.0",
+    "nodemailer": "^6.6.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "smtpjs": "0.0.1",
+    "twilio": "^3.62.0"
+  }
+}

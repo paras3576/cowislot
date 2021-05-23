@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Vaccine Availability Alert</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		
+	</head>
+	<body>
+	
+	<div class="image">
+	<img src="vaccine.jpg" align="Right">
+	</div>
+	<div class="registration-form">
+	
+	<div class="feedback">
+	<h7>For any feedback or complaints, please feel free to email us at : <br> cowislot@gmail.com</h7>
+	</div>
+	
+	<h2>Get Notified for Vaccine Availability, So Easily !</h2>
+	<form name="passpin" action="#" method="post">
+		<p>PinCode:</p>
+		<input type="text" name="pincode" id="pin" placeholder="Pincode">
+		<p>Email:</p>
+		<input type="email" name="email" id="email" placeholder="Email Id">
+		<p>Age_Limit</p>
+		<select id="Age_Limit" name="Age_Limit" placeholder="Age-Limit">
+		<option value="" selected disabled hidden>Choose Value</option>
+		<option value="18">18-45</option>
+		<option value="45">45+</option>
+		</select>
+		<p>Mobile No (Optional)<p>
+		<div class="alert_msg">(Do not enter any pefix like +91 or 0)</div><br>
+		<input type="tel" name="mobile" id="mobile" placeholder="Mobile-No" pattern="[0-9]{10}">
+		<br><br>
+		<div id="message"></div>
+		<button type="button" onclick="getVaccineDetails()" id="subscribe">Subscribe</button>
+		<button type="button" onclick="removeVaccineDetails()" id="unsubscribe">Unsubscribe</button>
+	</form>
+	</div>
+		
+	<script>
+	
+	function validateData(email,mob){
+		var valid=1,ind1=1,ind2=1;
+		var mailformat = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+		var mob_format=/^\d{10}$/;
+		
+		if(!(email.match(mailformat))){
+			document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a valid email address</span>";
+			ind1=0;
+		}
+		
+		else if(!(mob.match(mob_format)) && mob.length!=0){
+			document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a valid Mobile Number</span>";
+			ind2=0;
+			}
+		
+		if(ind1==0 || ind2==0){
+			valid=0;
+		}
+		return valid;
+	}
+	
+	
+	async function removeVaccineDetails(){
+		const pin=document.getElementById('pin').value;
+		const mob=document.getElementById('mobile').value;
+		const email=document.getElementById('email').value;
+		const age=document.getElementById('Age_Limit').value;
+		var today = new Date();
+		var month_today=(today.getMonth()+1);
+		console.log(month_today);
+		if((month_today.toString().length)<2){
+			month_today="0"+month_today.toString();
+		}
+		console.log(month_today);
+		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
+		const remove_url=`unsubscribe/${pin},${mob},${email},${age}`
+		
+		var valid=validateData(email,mob);
+		console.log('Valid:'+valid);
+		if(valid==1){
+		if(pin!='' && email!='' && age!=''){
+		const response = await fetch(remove_url);
+		const data_remove = await response.json();
+		console.log(data_remove.message)
+		color=data_remove.color;
+		
+		if(color=='red'){
+		document.getElementById('message').innerHTML="<span style='color: red;'>"+data_remove.message+"</span>";
+		}
+		else{
+		document.getElementById('message').innerHTML="<span style='color: green;'>"+data_remove.message+"</span>";
+		}
+		}
+		else{
+		document.getElementById('message').innerHTML="<span style='color: red;'>**Please fill in all the details</span>";
+		}
+		}
+	}
+	
+	
+	async function getVaccineDetails(){
+		console.log('inside function');
+		const pin=document.getElementById('pin').value;
+		const mob=document.getElementById('mobile').value;
+		//const date=document.getElementById('date').value;
+		//const date1= date.substring(8,10)+'-'+date.substring(5,7)+'-'+date.substring(0,4);
+		const email=document.getElementById('email').value;
+		const age=document.getElementById('Age_Limit').value;
+		
+		var today = new Date();
+		var month_today=(today.getMonth()+1);
+		console.log(month_today);
+		if((month_today.toString().length)<2){
+			month_today="0"+month_today.toString();
+		}
+		console.log(month_today);
+		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
+		 
+		var valid=validateData(email,mob);
+		console.log('Valid:'+valid);
+		if(valid==1){
+		//const api_url='https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode='+pin+'&date='+date1;
+		const api_url=`vaccine/${pin},${mob},${email},${age}`;
+		console.log(document.getElementById('pin').value);
+		//console.log(document.getElementById('date').value);
+		console.log(date_today);
+		console.log(api_url);
+		console.log(pin=='');
+		console.log(email=='');
+		console.log(age=='');
+		console.log(date_today=='');
+		
+		if(pin!='' && email!='' && age!=''){
+		const response = await fetch(api_url);
+		const data1 = await response.json();
+		console.log(data1.message)
+		color=data1.color;
+		
+		if(color=='red'){
+		document.getElementById('message').innerHTML="<span style='color: red;'>"+data1.message+"</span>";
+		}
+		else{
+		document.getElementById('message').innerHTML="<span style='color: green;'>"+data1.message+"</span>";
+		}
+		}
+		else{
+		document.getElementById('message').innerHTML="<span style='color: red;'>**Please fill in all the details</span>";
+		}
+		//const data1 = await response.json();
+		//console.log(data1);
+		}
+		}
+	</script>
+	</body>
+</html>
