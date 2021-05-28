@@ -30,3 +30,7 @@
     "twilio": "^3.62.0"
   }
 }
+
+"scripts": {
+    "start": "node index.js"
+}
