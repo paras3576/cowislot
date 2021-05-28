@@ -6,12 +6,12 @@ const app = express();
 const fetch=require('node-fetch');
 const cors=require('cors');
 const schedule= require('node-schedule');
-const accountSid=process.env.TWILIO_ACCOUNT_SID;
-const autheToken=process.env.TWILIO_AUTH_TOKEN;
-const mobile_from=process.env.MOBILE_FROM;
+//const accountSid=process.env.TWILIO_ACCOUNT_SID;
+//const autheToken=process.env.TWILIO_AUTH_TOKEN;
+//const mobile_from=process.env.MOBILE_FROM;
 const email_from=process.env.EMAIL_FROM;
 const email_pass_token=process.env.EMAIL_PASS_TOKEN;
-const client=require('twilio')(accountSid,autheToken);
+//const client=require('twilio')(accountSid,autheToken);
 const port=process.env.PORT||3000;
 
 
