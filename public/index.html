@@ -6,17 +6,14 @@
 		
 	</head>
 	<body>
+		
+	<div class="registration-space">
 	
-	<div class="image">
-	<img src="vaccine.jpg" align="Right">
-	</div>
 	<div class="registration-form">
 	
-	<div class="feedback">
-	<h7>For any feedback or complaints, please feel free to email us at : <br> cowislot@gmail.com</h7>
-	</div>
 	
-	<h2>Get Notified for Vaccine Availability, So Easily !</h2>
+	
+	<h2>Get Notified for Vaccine Availability, So Easily !</h2><br>
 	<form name="passpin" action="#" method="post">
 		<p>PinCode:</p>
 		<input type="text" name="pincode" id="pin" placeholder="Pincode">
@@ -27,7 +24,7 @@
 		<option value="" selected disabled hidden>Choose Value</option>
 		<option value="18">18-45</option>
 		<option value="45">45+</option>
-		</select>
+		</select><br><br>
 		<p>Mobile No (Optional)<p>
 		<div class="alert_msg">(Do not enter any pefix like +91 or 0)</div><br>
 		<input type="tel" name="mobile" id="mobile" placeholder="Mobile-No" pattern="[0-9]{10}">
@@ -37,7 +34,20 @@
 		<button type="button" onclick="removeVaccineDetails()" id="unsubscribe">Unsubscribe</button>
 	</form>
 	</div>
-		
+	
+	<div class="contact-details">
+	
+	<br><br><br>
+	
+		<div class="image">
+	<img src="vaccine.jpg" align="Right">
+	</div>
+	<br>
+	<br>
+	<div class="feedback">
+	<a href="mailto:cowislot@gmail.com">For any feedback or complaints, please feel free to email us here </a>
+	</div>
+	</div>
 	<script>
 	
 	function validateData(email,mob){
@@ -90,7 +100,7 @@
 		document.getElementById('message').innerHTML="<span style='color: red;'>"+data_remove.message+"</span>";
 		}
 		else{
-		document.getElementById('message').innerHTML="<span style='color: green;'>"+data_remove.message+"</span>";
+		document.getElementById('message').innerHTML="<span style='color: white;'>"+data_remove.message+"</span>";
 		}
 		}
 		else{
@@ -101,7 +111,7 @@
 	
 	
 	async function getVaccineDetails(){
-		console.log('inside function');
+		//console.log('inside function');
 		const pin=document.getElementById('pin').value;
 		const mob=document.getElementById('mobile').value;
 		//const date=document.getElementById('date').value;
@@ -111,7 +121,7 @@
 		
 		var today = new Date();
 		var month_today=(today.getMonth()+1);
-		console.log(month_today);
+		//console.log(month_today);
 		if((month_today.toString().length)<2){
 			month_today="0"+month_today.toString();
 		}
@@ -119,7 +129,7 @@
 		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
 		 
 		var valid=validateData(email,mob);
-		console.log('Valid:'+valid);
+		//console.log('Valid:'+valid);
 		if(valid==1){
 		//const api_url='https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode='+pin+'&date='+date1;
 		const api_url=`vaccine/${pin},${mob},${email},${age}`;
@@ -142,7 +152,7 @@
 		document.getElementById('message').innerHTML="<span style='color: red;'>"+data1.message+"</span>";
 		}
 		else{
-		document.getElementById('message').innerHTML="<span style='color: green;'>"+data1.message+"</span>";
+		document.getElementById('message').innerHTML="<span style='color: white;'>"+data1.message+"</span>";
 		}
 		}
 		else{

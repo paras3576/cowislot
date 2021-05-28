@@ -11,74 +11,74 @@ body{
 	
 }
 
-.image{
-	position: absolute;
-	top: 55%;
-	left: 80%;
-	transform: translate(-50%, -50%);
-	width: 40px;
-}
-
-.feedback{
-	position: absolute;
-	top: 90%;
-	left: 250%;
-	transform: translate(-50%, -50%);
-	width: 1000px;
+.registration-space{
+	display:flex;
 }
 
 .registration-form{
-	position: absolute;
-	top: 50%;
-	left: 40%;
-	transform: translate(-50%, -50%);
-	width: 400px;
+	flex:0.6;
+	font-size:18px;
+	margin-left:15%;
+	margin-top:40px;
 }
 
-.registration-form h2{
-	font-size: 30px;
-	text-align: center;
-	text-transform: uppercase;
-	margin: 15px 0;
+@media screen and (max-width:1200px){
+	.registration-space{
+	flex-direction:column;
+	}
 }
 
-.registration-form p{
-	font-size: 18px;
-	margin: 12px 0;
+.contact-details{
+	flex:0.3;
+	display:flex;
+	flex-direction: column;
 }
 
-.registration-form alert_msg{
-	font-size: 18px;
-	margin: 12px 0;
+.image{
+	flex:1;
+	margin:25%;
+	margin-right:50%;
 }
 
-.registration-form select{
-	font-size: 18px;
-	margin: 12px 0;
+.feedback{
+	margin: auto;
+	margin-top: 40%;
 }
 
-.registration-form input{
-	font-size: 16px;
-	padding: 15px 10px;
-	width: 100%;
+a{
+	color:white;
+}
+
+input{
+	font-size:16px;
+	padding: 15px 15px;
+	width: 50%;
 	border:0;
-	border-radius: 5px;
+	border-radius:5px;
 	outline: none;
 }
 
-.registration-form button{
+p{
 	font-size: 18px;
-	font-weight: bold;
-	margin: 20px 0;
-	padding: 10px 15px;
-	width: 45%;
-	border: 0;
-	border-radius: 5px;
-	background-color:#fff;
+	margin: 12px 0;
 }
 
+#unsubscribe, #subscribe{
+	font-size: 18px;
+	font-weight:bold;
+	margin: 20px 0;
+	padding: 10px 20px;
+	width: 28%;
+	border:0;
+	border-radius: 5px;
+	background-color: #fff;
+	cursor: pointer;
+}
 
-
-.registration-form button:hover{
+#unsubscribe:hover{
 	color: red;
+}
+
+#subscribe:hover{
+	color: green;
 }

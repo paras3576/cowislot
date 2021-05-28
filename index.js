@@ -92,13 +92,13 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 							console.log(err);
 						}
 						else{
-							console.log('Mail Sent');
+							console.log('Mail Sent for Unsubscription to '+remove_email);
 						}
 				});
 				//console.log('You are successfully unsubscribed');
 				response.json({ 
 				color: 'green',
-				message: 'You are successfully unsubscribed' });
+				message: 'You are successfully unsubscribed!!' });
 				entry_found=1;
 				break;
 				}
@@ -108,7 +108,7 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 				//console.log('You are not yet subscribed');
 				response.json({ 
 				color: 'red',
-				message: 'You are not yet subscribed' });
+				message: 'You are not yet subscribed!!' });
 			}
 	});
 });
@@ -135,7 +135,7 @@ app.get('/vaccine/:pind', async (request,response)=>{
 				//console.log('You are already subscribed');
 				response.json({ 
 				color: 'red',
-				message: 'You are already subscribed' });
+				message: 'You are already subscribed!!' });
 				found=1;
 				break;
 				}
@@ -167,12 +167,12 @@ app.get('/vaccine/:pind', async (request,response)=>{
 							console.log(err);
 						}
 						else{
-							console.log('Mail Sent');
+							console.log('Mail Sent for subscription to '+email);
 						}
 				});
 				response.json({ 
 				color: 'green',
-				message: 'You are successfully subscribed' });
+				message: 'You are successfully subscribed!!' });
 			}
 	});
 	
@@ -271,7 +271,7 @@ app.get('/vaccine/:pind', async (request,response)=>{
 							console.log(err);
 						}
 						else{
-							console.log('Mail Sent');
+							console.log('Mail Sent For Vaccine to '+email_db);
 						}
 				});
 					 
@@ -282,7 +282,7 @@ app.get('/vaccine/:pind', async (request,response)=>{
 	} 
 	});
 	}
-
+module.exports={scheduleEmail};
 
 
 
