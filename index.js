@@ -6,12 +6,8 @@ const app = express();
 const fetch=require('node-fetch');
 const cors=require('cors');
 const schedule= require('node-schedule');
-//const accountSid=process.env.TWILIO_ACCOUNT_SID;
-//const autheToken=process.env.TWILIO_AUTH_TOKEN;
-//const mobile_from=process.env.MOBILE_FROM;
 const email_from=process.env.EMAIL_FROM;
 const email_pass_token=process.env.EMAIL_PASS_TOKEN;
-//const client=require('twilio')(accountSid,autheToken);
 const port=process.env.PORT||3000;
 
 
@@ -23,14 +19,7 @@ app.use(cors());
 
 
 
-/* Send messages through mobile
-client.messages.create({
-	body:'This is a sample text',
-	from: mobile_from,
-	to: '+91********'
-}).then(message=>console.log(message))
-.catch(err=>console.log(err));
-*/
+
 
 const database=new Datastore('database.db');
 database.loadDatabase();
