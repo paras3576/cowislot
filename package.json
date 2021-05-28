@@ -4,7 +4,8 @@
   "description": "Cowin Vaccine Help App",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "index.js",
+	"test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "example",
