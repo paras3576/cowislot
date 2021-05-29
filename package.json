@@ -19,6 +19,7 @@
     "cron": "^1.8.2",
     "dotenv": "^9.0.2",
     "express": "^4.17.1",
+    "mongodb": "^3.6.9",
     "nedb": "^1.8.0",
     "next-absolute-url": "^1.2.2",
     "node-fetch": "^2.6.1",
@@ -29,6 +30,4 @@
     "smtpjs": "0.0.1",
     "twilio": "^3.62.0"
   }
-
-  
 }
