@@ -187,8 +187,8 @@ app.get('/vaccine/:pind', async (request,response)=>{
     response.json({
       message:'Successfully called'
     })
-  }
-  
+  })
+
   function scheduleEmail(){
 	var today = new Date();
 	var month_today=(today.getMonth()+1);
