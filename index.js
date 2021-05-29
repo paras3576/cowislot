@@ -40,7 +40,7 @@ let transporter= nodemailer.createTransport({
 	auth:{
 		user: email_from,
 		pass: email_pass_token
-		
+
 	}
 });
 
@@ -54,8 +54,8 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 	const remove_mob=remove_params[1];
 	const remove_email=remove_params[2];
 	const remove_age=remove_params[3];
-	
-	
+
+
 	//Finding the user in the database to unsubscribe it from the alerts
 	database.find({},async (err,db_remove_data)=>{
 		var dbRemove,db_remove_email,db_remove_pin,db_remove_mob,db_remove_age,user_data_remove;
@@ -65,7 +65,7 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 			db_remove_pin=db_remove_data[dbRemove].Pin;
 			db_remove_mob=db_remove_data[dbRemove].Mob;
 			db_remove_age=db_remove_data[dbRemove].Age;
-			
+
 			if(db_remove_email==remove_email && db_remove_pin==remove_pin && db_remove_mob==remove_mob && db_remove_age==remove_age){
 				user_data_remove={Email:db_remove_email,Pin:db_remove_pin,Mob:db_remove_mob,Age:db_remove_age};
 				var age_email;
@@ -79,11 +79,11 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 					subject: 'Cowislot UnSubscription Successful',
 					text: 'Dear User,\n\n You are successfully unsubscribed to the email alerts for the vaccine availability at the requested pincode-'+remove_pin+' and age group:'+age_email+'.\n'+
 						'Thank you for the connection we had and we hope to get connected again soon.Stay Safe!'+'\n\n\n Happy To Help,\n Cowislot Team.'
-					
+
 					};
-					
+
 				database.remove(user_data_remove);
-				
+
 				//console.log('You are successfully subscribed');
 				transporter.sendMail(mailOptions_unsubscribe,function(err, data){
 						if(err){
@@ -94,17 +94,17 @@ app.all('/unsubscribe/:remove_params', async (request,response)=>{
 						}
 				});
 				//console.log('You are successfully unsubscribed');
-				response.json({ 
+				response.json({
 				color: 'green',
 				message: 'You are successfully unsubscribed!!' });
 				entry_found=1;
 				break;
 				}
 			}
-			
+
 			if(entry_found==0){
 				//console.log('You are not yet subscribed');
-				response.json({ 
+				response.json({
 				color: 'red',
 				message: 'You are not yet subscribed!!' });
 			}
@@ -118,7 +118,7 @@ app.get('/vaccine/:pind', async (request,response)=>{
 	const mob=pind[1];
 	const email=pind[2];
 	const age=pind[3];
-	
+
 	//Finding if the user has already been registered
 	database.find({},async (err,db_data)=>{
 		var dbFind,db_email,db_pin,db_mob,db_age,user_data;
@@ -128,17 +128,17 @@ app.get('/vaccine/:pind', async (request,response)=>{
 			db_pin=db_data[dbFind].Pin;
 			db_mob=db_data[dbFind].Mob;
 			db_age=db_data[dbFind].Age;
-			
+
 			if(db_email==email && db_pin==pin && db_age==age){
 				//console.log('You are already subscribed');
-				response.json({ 
+				response.json({
 				color: 'red',
 				message: 'You are already subscribed!!' });
 				found=1;
 				break;
 				}
 			}
-			
+
 			if(found==0){
 				user_data={Email:email,Pin:pin,Mob:mob,Age:age};
 				var email_age1;
@@ -151,9 +151,9 @@ app.get('/vaccine/:pind', async (request,response)=>{
 					subject: 'Cowislot Subscription Successful',
 					text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-'+pin+' and age group:'+email_age1+'.\n'+
 						'Please check your emails regularly and please let us know in case of any issues'+'\n\n\n Happy To Help,\n Cowislot Team.'
-					
+
 					};
-					
+
 				database.insert(user_data,function(err){
 					if(err){
 						console.log(err);
@@ -168,25 +168,34 @@ app.get('/vaccine/:pind', async (request,response)=>{
 							console.log('Mail Sent for subscription to '+email);
 						}
 				});
-				response.json({ 
+				response.json({
 				color: 'green',
 				message: 'You are successfully subscribed!!' });
 			}
 	});
-	
+
 });
-	
+
 	//Scheduling the job to fetch details from db and search the details for the subscribed users
 	//schedule.scheduleJob('*/20 * * * * *',()=>{
 		//console.log('inside schdeuler');
-		
-	function scheduleEmail(){	
+
+	app.get('/scheduling', async (request,response)=>{
+    console.log("Schedule started");
+    scheduleEmail();
+    console.log("Schedule completed");
+    response.json({
+      message:'Successfully called'
+    })
+  }
+  
+  function scheduleEmail(){
 	var today = new Date();
 	var month_today=(today.getMonth()+1);
 	if((month_today.toString().length)<2){
 			month_today="0"+month_today.toString();
 	}
-	
+
 	var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
 	database.find({},async (err,data)=>{
 		var dbCounter;
@@ -194,13 +203,13 @@ app.get('/vaccine/:pind', async (request,response)=>{
 			email_db=data[dbCounter].Email;
 			pin_db=data[dbCounter].Pin;
 			age_db=data[dbCounter].Age;
-		
+
 	const api_url=`https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
-	
+
 	const fetch_response=await fetch(api_url,{headers:meta,method:'GET'});
 	//console.log(fetch_response);
 	const json=await fetch_response.json();
-	
+
 	const centers=json['centers'];
 	var i,j,iter,sessions,Name,Address,Block,District,PinCode,Fees,Available_capacity,Available_capacity_Dose1,Available_capacity_Dose2,Date1,Age_Limit,Vaccine ;
 	var availability=[];
@@ -213,16 +222,16 @@ app.get('/vaccine/:pind', async (request,response)=>{
 		PinCode=centers[i].pincode;
 		Fees=centers[i].fee_type;
 		sessions=centers[i].sessions;
-		
+
 		for(j=0;j<sessions.length;j++){
 			Available_capacity=sessions[j].available_capacity;
 			Date1=sessions[j].date;
 			Age_Limit=sessions[j].min_age_limit;
 			Available_capacity_Dose1=sessions[j].available_capacity_dose1;
 			Available_capacity_Dose2=sessions[j].available_capacity_dose2;
-		
+
 			if(sessions[j]!=null){
-				
+
 				//console.log(availability);
 				if(Available_capacity>0 && Age_Limit==age_db){
 					match=0;
@@ -261,9 +270,9 @@ app.get('/vaccine/:pind', async (request,response)=>{
 					subject: 'Vaccine Available Alert',
 					text: 'Dear User,\n\n Vaccine is available now at your pincode-'+PinCode+'.The details are as below:\n\n'+data_mail+
 					'Please book your slots fast on Cowin website before they get booked'+'\n\n\n Happy To Help,\n Cowislot Team.'
-					
+
 					};
-					
+
 					transporter.sendMail(mailOptions,function(err, data){
 						if(err){
 							console.log(err);
@@ -272,16 +281,12 @@ app.get('/vaccine/:pind', async (request,response)=>{
 							console.log('Mail Sent For Vaccine to '+email_db);
 						}
 				});
-					 
+
 				}
-			
+
 			console.log('\n');
 
-	} 
+	}
 	});
 	}
 module.exports={scheduleEmail};
-
-
-
-
