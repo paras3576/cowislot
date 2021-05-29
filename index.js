@@ -1,4 +1,5 @@
 require('dotenv').config();
+var trycatch = require('trycatch')
 const MongoClient = require('mongodb').MongoClient;
 const pass = "dandimatlaA26@";
 const uri = "mongodb+srv://paras:" + pass + "@cluster0.ia9fk.mongodb.net/cowislot_app?retryWrites=true&w=majority";
@@ -329,12 +330,8 @@ async function scheduleEmail() {
   });
 
   const db3 = client3.db('cowislot_app');
-
   const data = await db3.collection('user_data').find({}).toArray();
   //console.log(data);
-
-
-
   //database.find({}, async (err, data) => {
     var dbCounter;
     for (dbCounter = 0; dbCounter < data.length; dbCounter++) {
@@ -350,8 +347,9 @@ async function scheduleEmail() {
       });
       //console.log(fetch_response);
       const json = await fetch_response.json();
-
+      //console.log("json "+json);
       const centers = json['centers'];
+      if(centers!=undefined){
       var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
       var availability = [];
       var match;
@@ -395,6 +393,7 @@ async function scheduleEmail() {
           }
         }
       }
+
       //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
       //console.log(availability);
       if (availability.length > 0) {
@@ -423,7 +422,7 @@ async function scheduleEmail() {
           if (err) {
             console.log(err);
           } else {
-            console.log('Mail Sent For Vaccine to ' + email_db);
+            console.log('Mail Sent For Vaccine Details');
           }
         });
 
@@ -432,6 +431,7 @@ async function scheduleEmail() {
       console.log('\n');
 
     }
+  }
   //});
 }
 module.exports = {
