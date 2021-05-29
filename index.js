@@ -1,7 +1,7 @@
 require('dotenv').config();
 var trycatch = require('trycatch')
 const MongoClient = require('mongodb').MongoClient;
-const pass = "dandimatlaA26@";
+const pass = process.env.DB_PASSWORD_TOKEN;
 const uri = "mongodb+srv://paras:" + pass + "@cluster0.ia9fk.mongodb.net/cowislot_app?retryWrites=true&w=majority";
 const express = require('express');
 const nodemailer = require('nodemailer');
@@ -35,90 +35,6 @@ let transporter = nodemailer.createTransport({
 });
 
 var mailOptions;
-
-/*const findItems = async (data_mongo) => { // write above code here };
-  //const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  const pin = data_mongo[0];
-  const mob = data_mongo[1];
-  const email = data_mongo[2];
-  const age = data_mongo[3];
-
-  const client = await MongoClient.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
-
-  const db = client.db('cowislot_app');
-
-  const db_data = await db.collection('user_data').find({}).toArray();
-  //console.log(db_data);
-
-  var dbFind, db_email, db_pin, db_mob, db_age, user_data;
-  var found = 0;
-  for (dbFind = 0; dbFind < db_data.length; dbFind++) {
-    db_email = db_data[dbFind].Email;
-    db_pin = db_data[dbFind].Pin;
-    db_mob = db_data[dbFind].Mob;
-    db_age = db_data[dbFind].Age;
-
-    if (db_email == email && db_pin == pin && db_age == age) {
-      console.log('You are already subscribed '+email);
-      /*response.json({
-        color: 'red',
-        message: 'You are already subscribed!!'
-      });
-      found = 1;
-      break;
-    }
-  }
-
-  if (found == 0) {
-    //console.log("no data found");
-
-    data_mongo_ins = {
-      Email: email,
-      Pin: pin,
-      Mob: mob,
-      Age: age
-    };
-
-    var email_age1;
-    if (age == 18) {
-      email_age1 = '18-45';
-    } else {
-      email_age1 = '45+';
-    }
-    mailOptions_subscribe = {
-      from: email_from,
-      to: email,
-      subject: 'Cowislot Subscription Successful',
-      text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' and age group:' + email_age1 + '.\n' +
-        'Please check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
-
-    };
-
-    const items = await db.collection('user_data').insertOne(data_mongo_ins, function(err, res) {
-      if (err) {
-        //client.close();
-        console.log("Error inserting " + err);
-      } else {
-        console.log("Successfully inserted "+email);
-      }
-    });
-
-    transporter.sendMail(mailOptions_subscribe, function(err, data) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log('Mail Sent for subscription to ' + email);
-      }
-    });
-
-  }
-
-  return found;
-};*/
-//findItems();
 
 app.listen(port, () => console.log('listening at 3000'));
 app.use(express.static('public'));
@@ -158,7 +74,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
     db_remove_mob = db_remove_data[dbRemove].Mob;
     db_remove_age = db_remove_data[dbRemove].Age;
 
-    if (db_remove_email == remove_email && db_remove_pin == remove_pin && db_remove_mob == remove_mob && db_remove_age == remove_age) {
+    if (db_remove_email == remove_email && db_remove_pin == remove_pin && db_remove_age == remove_age) {
       user_data_remove = {
         Email: db_remove_email,
         Pin: db_remove_pin,
@@ -271,7 +187,7 @@ app.get('/vaccine/:pind', async (request, response) => {
       to: email,
       subject: 'Cowislot Subscription Successful',
       text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' and age group:' + email_age1 + '.\n' +
-        'Please check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
+        'We will alert you in every 15 minutes about the avialable doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
     };
 
