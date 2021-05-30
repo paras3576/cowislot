@@ -2,7 +2,7 @@ require('dotenv').config();
 var trycatch = require('trycatch')
 const MongoClient = require('mongodb').MongoClient;
 const pass = process.env.DB_PASSWORD_TOKEN;
-const uri = "mongodb+srv://paras:" + pass + "@cluster0.ia9fk.mongodb.net/cowislot_app?retryWrites=true&w=majority";
+const url = "mongodb+srv://paras:" + pass + "@cluster0.ia9fk.mongodb.net/cowislot_app?retryWrites=true&w=majority";
 const express = require('express');
 const nodemailer = require('nodemailer');
 const Datastore = require('nedb');
@@ -123,6 +123,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
     }
   }
 
+
   if (entry_found == 0) {
     console.log('You are not yet subscribed ' + remove_email);
     response.json({
@@ -130,6 +131,9 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
       message: 'You are not yet subscribed!!'
     });
   }
+
+  console.log("Closing");
+  await client.close();
 });
 
 //To subscribe a user
@@ -214,6 +218,7 @@ app.get('/vaccine/:pind', async (request, response) => {
       message: 'You are successfully subscribed!!'
     });
   }
+  client2.close();
 });
 
 //});
@@ -268,7 +273,7 @@ async function scheduleEmail() {
 
       const centers = json['centers'];
       //console.log("Centers: "+centers);
-      if (centers!=undefined) {
+      if (centers != undefined) {
         var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
         var availability = [];
         var match;
@@ -354,9 +359,152 @@ async function scheduleEmail() {
       console.error(error);
     }
   }
+  //await client3.close();
 
   //});
 }
+
+
+const insertDocuments = function(db, callback) {
+  // Get the documents collection
+  const collection = db.collection('documents');
+  // Insert some documents
+  collection.insertMany([{ a: 1 }, { a: 2 }, { a: 3 }], function(err, result) {
+    assert.equal(err, null);
+    assert.equal(3, result.result.n);
+    assert.equal(3, result.ops.length);
+    console.log('Inserted 3 documents into the collection');
+    callback(result);
+  });
+};
+
+const findDocuments = function(db, callback) {
+  // Get the documents collection
+  // const collection = db.collection('documents');
+  // // Find some documents
+  // collection.find({ a: 3 }).toArray(function(err, docs) {
+  //   assert.equal(err, null);
+  //   console.log('Found the following records');
+  //   console.log(docs);
+  //   callback(docs);
+  // });
+  const db_data = await db.collection('user_data').find({}).toArray();
+  //console.log(db_data);
+
+  var dbFind, db_email, db_pin, db_mob, db_age, user_data;
+  var found = 0;
+  for (dbFind = 0; dbFind < db_data.length; dbFind++) {
+    db_email = db_data[dbFind].Email;
+    db_pin = db_data[dbFind].Pin;
+    db_mob = db_data[dbFind].Mob;
+    db_age = db_data[dbFind].Age;
+
+    if (db_email == email && db_pin == pin && db_age == age) {
+      console.log('You are already subscribed ' + email);
+      response.json({
+        color: 'red',
+        message: 'You are already subscribed!!'
+      });
+      found = 1;
+      break;
+    }
+  }
+
+  if (found == 0) {
+    user_data = {
+      Email: email,
+      Pin: pin,
+      Mob: mob,
+      Age: age
+    };
+    var email_age1;
+    if (age == 18) {
+      email_age1 = '18-45';
+    } else {
+      email_age1 = '45+';
+    }
+    mailOptions_subscribe = {
+      from: email_from,
+      to: email,
+      subject: 'Cowislot Subscription Successful',
+      text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' and age group:' + email_age1 + '.\n' +
+        'We will alert you in every 15 minutes about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+    };
+
+};
+
+
+app.get('/subscribe/:pind', async (request, response) => {
+  const pind = request.params.pind.split(',');
+  const pin = pind[0];
+  const mob = pind[1];
+  const email = pind[2];
+  const age = pind[3];
+
+  // const client2 = new MongoClient(url);
+  // client2.connect(function(err) {
+  //   assert.equal(null, err);
+  //   console.log('Connected successfully to server');
+  //
+  //   const db = client2.db(dbName);
+  //
+  //   client2.close();
+  // });
+  MongoClient.connect(url, function(err, client) {
+  //assert.equal(null, err);
+  if(err){
+    console.log(error);
+    return
+  }
+  console.log('Connected correctly to server');
+
+  const db = client.db('cowislot_app');
+
+  findDocuments(db, function() {
+    insertDocuments(db, function() {
+      client.close();
+    });
+  });
+});
+
+  //const db2 = client2.db('cowislot_app');
+
+
+
+    const items = await db2.collection('user_data').insertOne(user_data, function(err, res) {
+      if (err) {
+        //client.close();
+        console.log("Error inserting " + err);
+      } else {
+        console.log("Successfully inserted " + email);
+      }
+    });
+
+    console.log('You are successfully subscribed');
+    transporter.sendMail(mailOptions_subscribe, function(err, data) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log('Mail Sent for subscription to ' + email);
+      }
+    });
+    response.json({
+      color: 'green',
+      message: 'You are successfully subscribed!!'
+    });
+  }
+  client2.close();
+});
+
+
+
+
+
+
+
+
+
 module.exports = {
   scheduleEmail
 };
