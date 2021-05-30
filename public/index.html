@@ -3,16 +3,16 @@
 	<head>
 		<title>Vaccine Availability Alert</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
-		
+
 	</head>
 	<body>
-		
+
 	<div class="registration-space">
-	
+
 	<div class="registration-form">
-	
-	
-	
+
+
+
 	<h2>Get Notified for Vaccine Availability, So Easily !</h2><br>
 	<form name="passpin" action="#" method="post">
 		<p>PinCode:</p>
@@ -34,44 +34,42 @@
 		<button type="button" onclick="removeVaccineDetails()" id="unsubscribe">Unsubscribe</button>
 	</form>
 	</div>
-	
+
 	<div class="contact-details">
-	
+
 	<br><br><br>
-	
-		<div class="image">
-	<img src="vaccine.jpg" align="Right">
-	</div>
+
+
 	<br>
 	<br>
 	<div class="feedback">
-	<a href="mailto:cowislot@gmail.com">For any feedback or complaints, please feel free to email us here </a>
+	<a href="mailto:cowislot@gmail.com">Contact us here for any Feedback  </a>
 	</div>
 	</div>
 	<script>
-	
+
 	function validateData(email,mob){
 		var valid=1,ind1=1,ind2=1;
 		var mailformat = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 		var mob_format=/^\d{10}$/;
-		
+
 		if(!(email.match(mailformat))){
 			document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a valid email address</span>";
 			ind1=0;
 		}
-		
+
 		else if(!(mob.match(mob_format)) && mob.length!=0){
 			document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a valid Mobile Number</span>";
 			ind2=0;
 			}
-		
+
 		if(ind1==0 || ind2==0){
 			valid=0;
 		}
 		return valid;
 	}
-	
-	
+
+
 	async function removeVaccineDetails(){
 		const pin=document.getElementById('pin').value;
 		const mob=document.getElementById('mobile').value;
@@ -86,7 +84,7 @@
 		console.log(month_today);
 		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
 		const remove_url=`unsubscribe/${pin},${mob},${email},${age}`
-		
+
 		var valid=validateData(email,mob);
 		console.log('Valid:'+valid);
 		if(valid==1){
@@ -95,7 +93,7 @@
 		const data_remove = await response.json();
 		console.log(data_remove.message)
 		color=data_remove.color;
-		
+
 		if(color=='red'){
 		document.getElementById('message').innerHTML="<span style='color: red;'>"+data_remove.message+"</span>";
 		}
@@ -112,8 +110,8 @@
 		}
 		}
 	}
-	
-	
+
+
 	async function getVaccineDetails(){
 		//console.log('inside function');
 		const pin=document.getElementById('pin').value;
@@ -122,7 +120,7 @@
 		//const date1= date.substring(8,10)+'-'+date.substring(5,7)+'-'+date.substring(0,4);
 		const email=document.getElementById('email').value;
 		const age=document.getElementById('Age_Limit').value;
-		
+
 		var today = new Date();
 		var month_today=(today.getMonth()+1);
 		//console.log(month_today);
@@ -131,7 +129,7 @@
 		}
 		console.log(month_today);
 		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
-		 
+
 		var valid=validateData(email,mob);
 		//console.log('Valid:'+valid);
 		if(valid==1){
@@ -145,13 +143,13 @@
 		console.log(email=='');
 		console.log(age=='');
 		console.log(date_today=='');
-		
+
 		if(pin!='' && email!='' && age!=''){
 		const response = await fetch(api_url);
 		const data1 = await response.json();
 		console.log(data1.message)
 		color=data1.color;
-		
+
 		if(color=='red'){
 		document.getElementById('message').innerHTML="<span style='color: red;'>"+data1.message+"</span>";
 		}

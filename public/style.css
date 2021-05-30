@@ -5,10 +5,10 @@
 }
 
 body{
-	background: url('./bg.jpg') no-repeat;
+	background: url('./vacc2.jpg') no-repeat;
 	background-size: cover;
 	color:#fff;
-	
+
 }
 
 .registration-space{
@@ -42,7 +42,8 @@ body{
 
 .feedback{
 	margin: auto;
-	margin-top: 40%;
+	margin-top: 150%;
+	margin-left:60%
 }
 
 a{

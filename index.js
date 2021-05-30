@@ -101,7 +101,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
           //client.close();
           console.log("Error deleting " + err);
         } else {
-          console.log("Successfully removed "+remove_email);
+          console.log("Successfully removed " + remove_email);
         }
       });
 
@@ -124,7 +124,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
   }
 
   if (entry_found == 0) {
-    console.log('You are not yet subscribed '+remove_email);
+    console.log('You are not yet subscribed ' + remove_email);
     response.json({
       color: 'red',
       message: 'You are not yet subscribed!!'
@@ -159,7 +159,7 @@ app.get('/vaccine/:pind', async (request, response) => {
     db_age = db_data[dbFind].Age;
 
     if (db_email == email && db_pin == pin && db_age == age) {
-      console.log('You are already subscribed '+email);
+      console.log('You are already subscribed ' + email);
       response.json({
         color: 'red',
         message: 'You are already subscribed!!'
@@ -187,7 +187,7 @@ app.get('/vaccine/:pind', async (request, response) => {
       to: email,
       subject: 'Cowislot Subscription Successful',
       text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' and age group:' + email_age1 + '.\n' +
-        'We will alert you in every 15 minutes about the avialable doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
+        'We will alert you in every 15 minutes about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
     };
 
@@ -197,7 +197,7 @@ app.get('/vaccine/:pind', async (request, response) => {
         //client.close();
         console.log("Error inserting " + err);
       } else {
-        console.log("Successfully inserted "+email);
+        console.log("Successfully inserted " + email);
       }
     });
 
@@ -249,105 +249,112 @@ async function scheduleEmail() {
   const data = await db3.collection('user_data').find({}).toArray();
   //console.log(data);
   //database.find({}, async (err, data) => {
-    var dbCounter;
-    for (dbCounter = 0; dbCounter < data.length; dbCounter++) {
-      email_db = data[dbCounter].Email;
-      pin_db = data[dbCounter].Pin;
-      age_db = data[dbCounter].Age;
+  var dbCounter;
+  for (dbCounter = 0; dbCounter < data.length; dbCounter++) {
+    email_db = data[dbCounter].Email;
+    pin_db = data[dbCounter].Pin;
+    age_db = data[dbCounter].Age;
 
-      const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
-
+    const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
+    try {
       const fetch_response = await fetch(api_url, {
         headers: meta,
         method: 'GET'
       });
       //console.log(fetch_response);
+
       const json = await fetch_response.json();
       //console.log("json "+json);
+
       const centers = json['centers'];
-      if(centers!=undefined){
-      var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
-      var availability = [];
-      var match;
-      for (i = 0; i < centers.length; i++) {
-        Name = centers[i].name;
-        Address = centers[i].address;
-        Block = centers[i].block_name;
-        District = centers[i].district_name;
-        PinCode = centers[i].pincode;
-        Fees = centers[i].fee_type;
-        sessions = centers[i].sessions;
+      //console.log("Centers: "+centers);
+      if (centers!=undefined) {
+        var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
+        var availability = [];
+        var match;
+        for (i = 0; i < centers.length; i++) {
+          Name = centers[i].name;
+          Address = centers[i].address;
+          Block = centers[i].block_name;
+          District = centers[i].district_name;
+          PinCode = centers[i].pincode;
+          Fees = centers[i].fee_type;
+          sessions = centers[i].sessions;
 
-        for (j = 0; j < sessions.length; j++) {
-          Available_capacity = sessions[j].available_capacity;
-          Date1 = sessions[j].date;
-          Age_Limit = sessions[j].min_age_limit;
-          Available_capacity_Dose1 = sessions[j].available_capacity_dose1;
-          Available_capacity_Dose2 = sessions[j].available_capacity_dose2;
+          for (j = 0; j < sessions.length; j++) {
+            Available_capacity = sessions[j].available_capacity;
+            Date1 = sessions[j].date;
+            Age_Limit = sessions[j].min_age_limit;
+            Available_capacity_Dose1 = sessions[j].available_capacity_dose1;
+            Available_capacity_Dose2 = sessions[j].available_capacity_dose2;
 
-          if (sessions[j] != null) {
+            if (sessions[j] != null) {
 
-            //console.log(availability);
-            if (Available_capacity > 0 && Age_Limit == age_db) {
-              match = 0;
-              for (iter = 0; iter < availability.length; iter++) {
-                if (availability[iter].Date == Date1 && availability.length != 0) {
-                  availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
-                  availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
-                  match = 1;
-                  break;
+              //console.log(availability);
+              if (Available_capacity > 0 && Age_Limit == age_db) {
+                match = 0;
+                for (iter = 0; iter < availability.length; iter++) {
+                  if (availability[iter].Date == Date1 && availability.length != 0) {
+                    availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
+                    availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
+                    match = 1;
+                    break;
+                  }
                 }
-              }
-              if (match == 0) {
-                availability.push({
-                  Date: Date1,
-                  Age: Age_Limit,
-                  Available: [Available_capacity_Dose1, Available_capacity_Dose2]
-                });
+                if (match == 0) {
+                  availability.push({
+                    Date: Date1,
+                    Age: Age_Limit,
+                    Available: [Available_capacity_Dose1, Available_capacity_Dose2]
+                  });
+                }
               }
             }
           }
         }
-      }
 
-      //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
-      //console.log(availability);
-      if (availability.length > 0) {
-        var data_mail = '';
-        var email_age2;
-        var data_counter;
-        for (data_counter = 0; data_counter < availability.length; data_counter++) {
-          if (availability[data_counter].Age == 18) {
-            email_age2 = '18-45';
-          } else {
-            email_age2 = '45+';
+        //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
+        //console.log(availability);
+        if (availability.length > 0) {
+          var data_mail = '';
+          var email_age2;
+          var data_counter;
+          for (data_counter = 0; data_counter < availability.length; data_counter++) {
+            if (availability[data_counter].Age == 18) {
+              email_age2 = '18-45';
+            } else {
+              email_age2 = '45+';
+            }
+            data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
+              'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
           }
-          data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
-            'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
+          mailOptions = {
+            from: email_from,
+            to: email_db,
+            subject: 'Vaccine Available Alert',
+            text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
+              'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+          };
+
+          transporter.sendMail(mailOptions, function(err, data) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Mail Sent For Vaccine Details');
+            }
+          });
+
         }
-        mailOptions = {
-          from: email_from,
-          to: email_db,
-          subject: 'Vaccine Available Alert',
-          text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
-            'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
-        };
-
-        transporter.sendMail(mailOptions, function(err, data) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log('Mail Sent For Vaccine Details');
-          }
-        });
+        console.log('\n');
 
       }
-
-      console.log('\n');
-
+    } catch (error) {
+      console.error(error);
     }
   }
+
   //});
 }
 module.exports = {
