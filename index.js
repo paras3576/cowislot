@@ -96,7 +96,8 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
 
         };
 
-        const del=db.collection('user_data').removeOne(user_data_remove);
+        const del=await db.collection('user_data').removeOne(user_data_remove);
+        //console.log("Del"+del);
 
         if(del){
           console.log("Successfully removed " + remove_email);
@@ -373,7 +374,9 @@ async function scheduleEmail() {
               if (err) {
                 console.log(err);
               } else {
-                console.log('Mail Sent For Vaccine Details');
+                console.log('Mail Sent For Vaccine Details to '+data.envelope.to[0]);
+                //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
+                //console.log(data.envelope.to[0]);
               }
             });
 
