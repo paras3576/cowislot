@@ -451,7 +451,7 @@ async function scheduleEmail() {
           //     //console.log(data.envelope.to[0]);
           //   }
           // });
-          console.log("sending outlook mail");
+          //console.log("sending outlook mail");
 
           await transporter2.sendMail(mailOptions_outlook, function(err, data) {
             if (err) {
@@ -462,7 +462,7 @@ async function scheduleEmail() {
               //console.log(data.envelope.to[0]);
             }
           });
-          //await delay(2000);
+          await new Promise(resolve => setTimeout(resolve, 2000));
 
         }
 
