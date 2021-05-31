@@ -1,7 +1,10 @@
 require('dotenv').config();
+const sgMail = require('@sendgrid/mail')
+const mail_api = process.env.SENDGRID_MAIL_API
 var trycatch = require('trycatch')
 const MongoClient = require('mongodb').MongoClient;
 const pass = process.env.DB_PASSWORD_TOKEN;
+const outlook_pass = process.env.DB_PASSWORD_OUTLOOK;
 const uri = "mongodb+srv://paras:" + pass + "@cluster0.ia9fk.mongodb.net/cowislot_app?retryWrites=true&w=majority";
 const express = require('express');
 const nodemailer = require('nodemailer');
@@ -10,6 +13,7 @@ const app = express();
 const fetch = require('node-fetch');
 const cors = require('cors');
 const schedule = require('node-schedule');
+var nodeoutlook = require('nodejs-nodemailer-outlook')
 //const accountSid=process.env.TWILIO_ACCOUNT_SID;
 //const autheToken=process.env.TWILIO_AUTH_TOKEN;
 //const mobile_from=process.env.MOBILE_FROM;
@@ -20,6 +24,9 @@ const email_from = process.env.EMAIL_FROM;
 const email_pass_token = process.env.EMAIL_PASS_TOKEN;
 const port = process.env.PORT || 3000;
 
+
+sgMail.setApiKey(mail_api);
+
 const meta = {
   'Content-Type': 'application/json',
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
@@ -27,10 +34,29 @@ const meta = {
 
 let transporter = nodemailer.createTransport({
   service: 'gmail',
+  //host: 'smtp.office365.com',
+  //port: '587',
   auth: {
     user: email_from,
     pass: email_pass_token
+  },
+  //secureConnection: true,
+  //tls: { ciphers: 'SSLv3' }
+});
 
+let transporter2 = nodemailer.createTransport({
+  //service: 'gmail',
+  host: 'smtp.office365.com',
+  port: '587',
+  auth: {
+    //user: email_from,
+    //pass: email_pass_token
+    user: "cowislot@outlook.com",
+    pass: outlook_pass
+  },
+  secureConnection: true,
+  tls: {
+    ciphers: 'SSLv3'
   }
 });
 
@@ -96,13 +122,13 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
 
         };
 
-        const del=await db.collection('user_data').removeOne(user_data_remove);
+
+        const del = await db.collection('user_data').removeOne(user_data_remove);
         //console.log("Del"+del);
 
-        if(del){
+        if (del) {
           console.log("Successfully removed " + remove_email);
-        }
-        else{
+        } else {
           console.log("Error deleting ");
         }
         //   , function(err, res) {
@@ -114,7 +140,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
         //   }
         // });
 
-        //console.log('You are successfully subscribed');
+        console.log('You are successfully unsubscribed');
         transporter.sendMail(mailOptions_unsubscribe, function(err, data) {
           if (err) {
             console.log(err);
@@ -122,6 +148,41 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
             console.log('Mail Sent for Unsubscription to ' + remove_email);
           }
         });
+        /////////////Using Send Grid///
+        // console.log("sending mail");
+        // sgMail
+        //   .send(mailOptions_unsubscribe)
+        //   .then((response) => {
+        //     console.log(response[0].statusCode)
+        //     console.log(response[0].headers)
+        //   })
+        //   .catch((error) => {
+        //     console.error(error)
+        //   })
+        //   try{
+        //   transporter.sendMail({
+        //     from :"cowislot@outlook.com",
+        //     to:"paras3576@gmail.com",
+        //     subject:"Unsubscibe from Outlook",
+        //     text:"hello"
+        //   });
+        // }catch(error){
+        //   console.log(error);
+        // }
+
+
+        //         nodeoutlook.sendEmail({
+        //     auth: {
+        //         user: "cowislot@outlook.com",
+        //         pass: "dandimatlaA26@"
+        //     },
+        //     from: "cowislot@outlook.com",
+        //     to: "paras.moveon@gmail.com",
+        //     subject: "Cowislot Unsubscription Successful",
+        //     text: "Thanks for your time",
+        //     onError: (e) => console.log(e),
+        //     onSuccess: (i) => console.log(i)
+        // });
         //console.log('You are successfully unsubscribed');
         response.json({
           color: 'green',
@@ -280,7 +341,7 @@ async function scheduleEmail() {
   const db3 = client3.db('cowislot_app');
   try {
     const data = await db3.collection('user_data').find({}).toArray();
-    //console.log(data);
+    //console.log(data.length);
     //database.find({}, async (err, data) => {
     var dbCounter;
     for (dbCounter = 0; dbCounter < data.length; dbCounter++) {
@@ -288,106 +349,130 @@ async function scheduleEmail() {
       pin_db = data[dbCounter].Pin;
       age_db = data[dbCounter].Age;
 
+
       const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
-      try {
-        const fetch_response = await fetch(api_url, {
-          headers: meta,
-          method: 'GET'
-        });
-        //console.log(fetch_response);
+      //  try {
+      const fetch_response = await fetch(api_url, {
+        headers: meta,
+        method: 'GET'
+      });
+      //console.log(fetch_response);
 
-        const json = await fetch_response.json();
-        //console.log("json "+json);
+      const json = await fetch_response.json();
+      //console.log("json "+json);
 
-        const centers = json['centers'];
-        //console.log("Centers: "+centers);
-        if (centers != undefined) {
-          var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
-          var availability = [];
-          var match;
-          for (i = 0; i < centers.length; i++) {
-            Name = centers[i].name;
-            Address = centers[i].address;
-            Block = centers[i].block_name;
-            District = centers[i].district_name;
-            PinCode = centers[i].pincode;
-            Fees = centers[i].fee_type;
-            sessions = centers[i].sessions;
+      const centers = json['centers'];
+      //console.log("Centers: "+centers);
+      if (centers != undefined) {
+        var i, j, iter, sessions, Name, Address, Block, District, PinCode, Fees, Available_capacity, Available_capacity_Dose1, Available_capacity_Dose2, Date1, Age_Limit, Vaccine;
+        var availability = [];
+        var match;
+        for (i = 0; i < centers.length; i++) {
+          Name = centers[i].name;
+          Address = centers[i].address;
+          Block = centers[i].block_name;
+          District = centers[i].district_name;
+          PinCode = centers[i].pincode;
+          Fees = centers[i].fee_type;
+          sessions = centers[i].sessions;
 
-            for (j = 0; j < sessions.length; j++) {
-              Available_capacity = sessions[j].available_capacity;
-              Date1 = sessions[j].date;
-              Age_Limit = sessions[j].min_age_limit;
-              Available_capacity_Dose1 = sessions[j].available_capacity_dose1;
-              Available_capacity_Dose2 = sessions[j].available_capacity_dose2;
+          for (j = 0; j < sessions.length; j++) {
+            Available_capacity = sessions[j].available_capacity;
+            Date1 = sessions[j].date;
+            Age_Limit = sessions[j].min_age_limit;
+            Available_capacity_Dose1 = sessions[j].available_capacity_dose1;
+            Available_capacity_Dose2 = sessions[j].available_capacity_dose2;
 
-              if (sessions[j] != null) {
+            if (sessions[j] != null) {
 
-                //console.log(availability);
-                if (Available_capacity > 0 && Age_Limit == age_db) {
-                  match = 0;
-                  for (iter = 0; iter < availability.length; iter++) {
-                    if (availability[iter].Date == Date1 && availability.length != 0) {
-                      availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
-                      availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
-                      match = 1;
-                      break;
-                    }
+              //console.log(availability);
+              if (Available_capacity > 0 && Age_Limit == age_db) {
+                match = 0;
+                for (iter = 0; iter < availability.length; iter++) {
+                  if (availability[iter].Date == Date1 && availability.length != 0) {
+                    availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
+                    availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
+                    match = 1;
+                    break;
                   }
-                  if (match == 0) {
-                    availability.push({
-                      Date: Date1,
-                      Age: Age_Limit,
-                      Available: [Available_capacity_Dose1, Available_capacity_Dose2]
-                    });
-                  }
+                }
+                if (match == 0) {
+                  availability.push({
+                    Date: Date1,
+                    Age: Age_Limit,
+                    Available: [Available_capacity_Dose1, Available_capacity_Dose2]
+                  });
                 }
               }
             }
           }
+        }
 
-          //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
-          //console.log(availability);
-          if (availability.length > 0) {
-            var data_mail = '';
-            var email_age2;
-            var data_counter;
-            for (data_counter = 0; data_counter < availability.length; data_counter++) {
-              if (availability[data_counter].Age == 18) {
-                email_age2 = '18-45';
-              } else {
-                email_age2 = '45+';
-              }
-              data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
-                'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
+        //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
+        //console.log(availability);
+        if (availability.length > 0) {
+
+          var data_mail = '';
+          var email_age2;
+          var data_counter;
+          for (data_counter = 0; data_counter < availability.length; data_counter++) {
+            if (availability[data_counter].Age == 18) {
+              email_age2 = '18-45';
+            } else {
+              email_age2 = '45+';
             }
-            mailOptions = {
-              from: email_from,
-              to: email_db,
-              subject: 'Vaccine Available Alert',
-              text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
-                'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
-
-            };
-
-            transporter.sendMail(mailOptions, function(err, data) {
-              if (err) {
-                console.log(err);
-              } else {
-                console.log('Mail Sent For Vaccine Details to '+data.envelope.to[0]);
-                //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
-                //console.log(data.envelope.to[0]);
-              }
-            });
-
+            data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
+              'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
           }
+          mailOptions = {
+            from: email_from,
+            to: email_db,
+            subject: 'Vaccine Available Alert',
+            text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
+              'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
-          console.log('\n');
+          };
+
+          mailOptions_outlook = {
+            from: "cowislot@outlook.com",
+            to: email_db,
+            subject: 'Vaccine Available Alert',
+            text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
+              'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+          };
+          ///commenting temporary for using outlook functionality
+          // transporter.sendMail(mailOptions, function(err, data) {
+          //   if (err) {
+          //     console.log(err);
+          //   } else {
+          //     console.log('Mail Sent For Vaccine Details to ' + data.envelope.to[0]);
+          //     //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
+          //     //console.log(data.envelope.to[0]);
+          //   }
+          // });
+          console.log("sending outlook mail");
+
+          await transporter2.sendMail(mailOptions_outlook, function(err, data) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Mail Sent For Vaccine Details to ' + data.envelope.to[0]);
+              //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
+              //console.log(data.envelope.to[0]);
+            }
+          });
+          //await delay(2000);
 
         }
-      } catch (error) {
-        console.error(error);
+
+        console.log('\n');
+
       }
+      //  } catch (error) {
+      //    console.error(error);
+
+      //  }
     }
     //await client3.close();
   } finally {
@@ -396,6 +481,29 @@ async function scheduleEmail() {
   }
   //});
 }
+
+app.get('/count', async (request, response) => {
+  console.log("Count function ");
+
+  const client_count = await MongoClient.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+
+  const db_count = client_count.db('cowislot_app');
+
+  try {
+    const db_count_data = await db_count.collection('user_data').countDocuments();
+    console.log(db_count_data);
+
+  response.json({
+    count: db_count_data
+  })
+}finally{
+  client_count.close();
+}
+});
+
 module.exports = {
   scheduleEmail
 };

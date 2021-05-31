@@ -5,7 +5,7 @@
 }
 
 body{
-	background: url('./vacc2.jpg') no-repeat;
+	background: url('./vacc7.jpg') no-repeat;
 	background-size: cover;
 	color:#fff;
 
@@ -38,6 +38,13 @@ body{
 	flex:1;
 	margin:25%;
 	margin-right:50%;
+}
+
+.user_count{
+	margin: auto;
+	margin-top: 8%;
+	margin-left:-15%
+	size: 20px;
 }
 
 .feedback{

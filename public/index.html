@@ -5,7 +5,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 
 	</head>
-	<body>
+	<body onload="displayCount()">
 
 	<div class="registration-space">
 
@@ -35,10 +35,13 @@
 	</form>
 	</div>
 
+	<div class="user_count" id="user_count">
+
+	</div>
+
 	<div class="contact-details">
 
 	<br><br><br>
-
 
 	<br>
 	<br>
@@ -47,6 +50,20 @@
 	</div>
 	</div>
 	<script>
+
+	async function displayCount(){
+
+		const count_url=`count/`;
+		const response_count = await fetch(count_url);
+		const count_data = await response_count.json();
+		console.log(count_data.count);
+		var display_msg="Number of Subscriptions : "+"\n"+count_data.count;
+		document.getElementById('user_count').innerHTML="<span style='color: white;'>"+display_msg+"</span>";
+		document.getElementById('user_count').style.fontSize = "x-large";
+		document.getElementById('user_count').style.boxShadow = "10px 20px 30px white";
+
+}
+
 
 	function validateData(email,mob){
 		var valid=1,ind1=1,ind2=1;
