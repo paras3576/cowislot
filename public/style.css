@@ -5,7 +5,7 @@
 }
 
 body{
-	background: url('./vacc7.jpg') no-repeat;
+	background: url('./vacc2.jpg') no-repeat;
 	background-size: cover;
 	color:#fff;
 
@@ -21,6 +21,8 @@ body{
 	margin-left:15%;
 	margin-top:40px;
 }
+
+
 
 @media screen and (max-width:1200px){
 	.registration-space{
@@ -68,8 +70,11 @@ input{
 
 p{
 	font-size: 18px;
-	margin: 12px 0;
+	margin: 10px 0;
+	margin-right: 510px;
 }
+
+
 
 #unsubscribe, #subscribe{
 	font-size: 18px;

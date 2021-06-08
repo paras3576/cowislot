@@ -5,7 +5,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 
 	</head>
-	<body onload="displayCount()">
+	<body>
 
 	<div class="registration-space">
 
@@ -25,6 +25,11 @@
 		<option value="18">18-45</option>
 		<option value="45">45+</option>
 		</select><br><br>
+
+		<p><input type="radio" id="Dose1" name="dose" value="Dose1">Dose1</p>
+		<p><input type="radio" id="Dose2" name="dose" value="Dose2">Dose2</p>
+
+
 		<p>Mobile No (Optional)<p>
 		<div class="alert_msg">(Do not enter any pefix like +91 or 0)</div><br>
 		<input type="tel" name="mobile" id="mobile" placeholder="Mobile-No" pattern="[0-9]{10}">
@@ -65,8 +70,8 @@
 }
 
 
-	function validateData(email,mob){
-		var valid=1,ind1=1,ind2=1;
+	function validateData(email,mob,dose){
+		var valid=1,ind1=1,ind2=1,ind3=1;
 		var mailformat = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 		var mob_format=/^\d{10}$/;
 
@@ -80,7 +85,12 @@
 			ind2=0;
 			}
 
-		if(ind1==0 || ind2==0){
+			else if(dose==undefined){
+				document.getElementById('message').innerHTML="<span style='color: red;'>Please select a dose</span>";
+				ind3=0;
+			}
+
+		if(ind1==0 || ind2==0 || ind3==0){
 			valid=0;
 		}
 		return valid;
@@ -137,7 +147,14 @@
 		//const date1= date.substring(8,10)+'-'+date.substring(5,7)+'-'+date.substring(0,4);
 		const email=document.getElementById('email').value;
 		const age=document.getElementById('Age_Limit').value;
-
+		var dose;
+		if(document.getElementById('Dose1').checked){
+			dose=document.getElementById('Dose1').value;
+		}
+		else if(document.getElementById('Dose2').checked){
+			dose=document.getElementById('Dose2').value;
+		}
+		console.log(dose);
 		var today = new Date();
 		var month_today=(today.getMonth()+1);
 		//console.log(month_today);
@@ -147,11 +164,11 @@
 		console.log(month_today);
 		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
 
-		var valid=validateData(email,mob);
+		var valid=validateData(email,mob,dose);
 		//console.log('Valid:'+valid);
 		if(valid==1){
 		//const api_url='https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode='+pin+'&date='+date1;
-		const api_url=`vaccine/${pin},${mob},${email},${age}`;
+		const api_url=`vaccine/${pin},${mob},${email},${age},${dose}`;
 		console.log(document.getElementById('pin').value);
 		//console.log(document.getElementById('date').value);
 		console.log(date_today);

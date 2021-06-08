@@ -22,6 +22,8 @@ var nodeoutlook = require('nodejs-nodemailer-outlook')
 //const client=require('twilio')(accountSid,autheToken);
 const email_from = process.env.EMAIL_FROM;
 const email_pass_token = process.env.EMAIL_PASS_TOKEN;
+const gsuite_pass_token = process.env.EMAIL_PASS_GSUITE;
+const gsuite_email_from = process.env.GSUITE_EMAIL_FROM;
 const port = process.env.PORT || 3000;
 
 
@@ -58,6 +60,19 @@ let transporter2 = nodemailer.createTransport({
   tls: {
     ciphers: 'SSLv3'
   }
+});
+
+//Gsuite
+let transporter3 = nodemailer.createTransport({
+  service: 'gmail',
+  //host: 'smtp.office365.com',
+  //port: '587',
+  auth: {
+    user: gsuite_email_from,
+    pass: gsuite_pass_token
+  },
+  //secureConnection: true,
+  //tls: { ciphers: 'SSLv3' }
 });
 
 var mailOptions;
@@ -215,6 +230,7 @@ app.get('/vaccine/:pind', async (request, response) => {
   const mob = pind[1];
   const email = pind[2];
   const age = pind[3];
+  const dose = pind[4];
 
   const client2 = await MongoClient.connect(uri, {
     useNewUrlParser: true,
@@ -233,24 +249,48 @@ app.get('/vaccine/:pind', async (request, response) => {
       db_pin = db_data[dbFind].Pin;
       db_mob = db_data[dbFind].Mob;
       db_age = db_data[dbFind].Age;
+      db_dose = db_data[dbFind].Dose;
+
 
       if (db_email == email && db_pin == pin && db_age == age) {
-        console.log('You are already subscribed ' + email);
-        response.json({
-          color: 'red',
-          message: 'You are already subscribed!!'
-        });
-        found = 1;
-        break;
+        console.log(db_dose);
+        if (db_dose == dose) {
+          console.log('You are already subscribed ' + email);
+          response.json({
+            color: 'red',
+            message: 'You are already subscribed!!'
+          });
+          found = 1;
+          break;
+        } else if (db_dose == "both") {
+          console.log("Inside update");
+          const upd = await db2.collection('user_data').updateOne({
+            Email: db_email,
+            Pin: db_pin,
+            Age: db_age
+          }, {
+            $set: {
+              Dose: dose
+            }
+          });
+          found = 2;
+          if (upd) {
+            console.log("Updated dose successfully for " + db_email);
+
+          } else {
+            console.log("Error updating" + email);
+          }
+        }
       }
     }
 
-    if (found == 0) {
+    if (found == 0 || found == 2) {
       user_data = {
         Email: email,
         Pin: pin,
         Mob: mob,
-        Age: age
+        Age: age,
+        Dose: dose
       };
       var email_age1;
       if (age == 18) {
@@ -262,18 +302,19 @@ app.get('/vaccine/:pind', async (request, response) => {
         from: email_from,
         to: email,
         subject: 'Cowislot Subscription Successful',
-        text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' and age group:' + email_age1 + '.\n' +
-          'We will alert you in every 15 minutes about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
+        text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' , Age group:' + email_age1 + ' and Dose: ' + dose + '.\n' +
+          'We will send you timely alerts about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
       };
 
+      if (found == 0) {
+        const items = await db2.collection('user_data').insertOne(user_data);
 
-      const items = await db2.collection('user_data').insertOne(user_data);
-
-      if (items) {
-        console.log("Successfully inserted " + email)
-      } else {
-        console.log("Error inserting ");
+        if (items) {
+          console.log("Successfully inserted " + email)
+        } else {
+          console.log("Error inserting ");
+        }
       }
       // , function(err, res) {
       //   if (err) {
@@ -344,10 +385,12 @@ async function scheduleEmail() {
     //console.log(data.length);
     //database.find({}, async (err, data) => {
     var dbCounter;
+    var alertCounter = 0;
     for (dbCounter = 0; dbCounter < data.length; dbCounter++) {
       email_db = data[dbCounter].Email;
       pin_db = data[dbCounter].Pin;
       age_db = data[dbCounter].Age;
+      dose_db = data[dbCounter].Dose;
 
 
       const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
@@ -357,7 +400,6 @@ async function scheduleEmail() {
         method: 'GET'
       });
       //console.log(fetch_response);
-
       const json = await fetch_response.json();
       //console.log("json "+json);
 
@@ -382,11 +424,52 @@ async function scheduleEmail() {
             Age_Limit = sessions[j].min_age_limit;
             Available_capacity_Dose1 = sessions[j].available_capacity_dose1;
             Available_capacity_Dose2 = sessions[j].available_capacity_dose2;
+            Vaccine = sessions[j].vaccine;
 
             if (sessions[j] != null) {
 
               //console.log(availability);
-              if (Available_capacity > 0 && Age_Limit == age_db) {
+              //console.log("Date"+Date1);
+              //console.log("Dose1"+Available_capacity_Dose1);
+              //console.log("Dose2"+Available_capacity_Dose2);
+              if (Available_capacity > 0 && Age_Limit == age_db && dose_db == 'both') {
+                //console.log("inside both");
+                match = 0;
+                for (iter = 0; iter < availability.length; iter++) {
+                  if (availability[iter].Date == Date1 && availability.length != 0) {
+                    availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
+                    availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
+                    match = 1;
+                    break;
+                  }
+                }
+                if (match == 0) {
+                  availability.push({
+                    Date: Date1,
+                    Age: Age_Limit,
+                    Available: [Available_capacity_Dose1, Available_capacity_Dose2]
+                  });
+                }
+              } else if (Available_capacity_Dose1 > 0 && Age_Limit == age_db && dose_db == 'Dose1') {
+                //console.log("inside dose1");
+                match = 0;
+                for (iter = 0; iter < availability.length; iter++) {
+                  if (availability[iter].Date == Date1 && availability.length != 0) {
+                    availability[iter].Available[0] = (+availability[iter].Available[0]) + (+Available_capacity_Dose1);
+                    availability[iter].Available[1] = (+availability[iter].Available[1]) + (+Available_capacity_Dose2);
+                    match = 1;
+                    break;
+                  }
+                }
+                if (match == 0) {
+                  availability.push({
+                    Date: Date1,
+                    Age: Age_Limit,
+                    Available: [Available_capacity_Dose1, Available_capacity_Dose2]
+                  });
+                }
+              } else if (Available_capacity_Dose2 > 0 && Age_Limit == age_db && dose_db == 'Dose2') {
+                //console.log("inside Dose2");
                 match = 0;
                 for (iter = 0; iter < availability.length; iter++) {
                   if (availability[iter].Date == Date1 && availability.length != 0) {
@@ -421,15 +504,23 @@ async function scheduleEmail() {
             } else {
               email_age2 = '45+';
             }
-            data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
-              'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
+            if (dose_db == "both") {
+              data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
+                'Available_Dose1: ' + availability[data_counter].Available[0] + '\n' + 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
+            } else if (dose_db == "Dose1") {
+              data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
+                'Available_Dose1: ' + availability[data_counter].Available[0] + '\n\n';
+            } else if (dose_db == "Dose2") {
+              data_mail += 'Date: ' + availability[data_counter].Date + '\n' + 'Age: ' + email_age2 + '\n' +
+                'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
+            }
           }
           mailOptions = {
             from: email_from,
             to: email_db,
             subject: 'Vaccine Available Alert',
             text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
-              'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
+              'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
           };
 
@@ -438,7 +529,7 @@ async function scheduleEmail() {
             to: email_db,
             subject: 'Vaccine Available Alert',
             text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
-              'Please book your slots fast on Cowin website before they get booked' + '\n\n\n Happy To Help,\n Cowislot Team.'
+              'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
           };
           ///commenting temporary for using outlook functionality
@@ -452,17 +543,43 @@ async function scheduleEmail() {
           //   }
           // });
           //console.log("sending outlook mail");
+          console.log("sending mail to : " + email_db);
+          // await transporter2.sendMail(mailOptions, function(err, data) {
+          //   if (err) {
+          //     console.log(err);
+          //   } else {
+          //     console.log('Mail Sent For Vaccine Details to ' + data.envelope.to[0]);
+          //     //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
+          //     //console.log(data.envelope.to[0]);
+          //   }
+          // });
 
-          await transporter2.sendMail(mailOptions_outlook, function(err, data) {
-            if (err) {
-              console.log(err);
-            } else {
-              console.log('Mail Sent For Vaccine Details to ' + data.envelope.to[0]);
-              //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
-              //console.log(data.envelope.to[0]);
+          //sendgrid
+          (async () => {
+            try {
+              await sgMail.send(mailOptions);
+            } catch (error) {
+              console.error(error);
+
+              if (error.response) {
+                console.error(error.response.body)
+              }
             }
-          });
+          })();
+
+          //Gsuite
+          // await transporter3.sendMail(mailOptions, function(err, data) {
+          //   if (err) {
+          //     console.log(err);
+          //   } else {
+          //     console.log('Mail Sent For Vaccine Details to ' + data.envelope.to[0]);
+          //     //envelope: { from: 'cowislot@gmail.com', to: [ 'paras3576@gmail.com' ] },
+          //     //console.log(data.envelope.to[0]);
+          //   }
+          // });
+
           await new Promise(resolve => setTimeout(resolve, 2000));
+          alertCounter++;
 
         }
 
@@ -472,9 +589,12 @@ async function scheduleEmail() {
       //  } catch (error) {
       //    console.error(error);
 
-      //  }
+
     }
     //await client3.close();
+    console.log("Counter: " + alertCounter);
+  } catch (error) {
+    console.log(error);
   } finally {
     client3.close();
     console.log("Connection closed in Scheduling");
@@ -496,12 +616,45 @@ app.get('/count', async (request, response) => {
     const db_count_data = await db_count.collection('user_data').countDocuments();
     console.log(db_count_data);
 
-  response.json({
-    count: db_count_data
-  })
-}finally{
-  client_count.close();
-}
+    response.json({
+      count: db_count_data
+    })
+  } finally {
+    client_count.close();
+  }
+});
+
+//updating Dose to both
+app.get('/updateDose', async (request, response) => {
+  console.log("Updating dose function ");
+
+  const client_count1 = await MongoClient.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+
+  const db_count1 = client_count1.db('cowislot_app');
+
+  try {
+    const db_data_upd = await db_count1.collection('user_data').find({}).toArray();
+    console.log(db_data_upd.length);
+
+    var dbFind_upd;
+    var upd_count = 0;
+    for (dbFind_upd = 0; dbFind_upd < db_data_upd.length; dbFind_upd++) {
+      const db_update_dose = await db_count1.collection('user_data').updateMany({}, {
+        $set: {
+          Dose: "both"
+        }
+      });
+      upd_count++;
+    }
+    console.log(upd_count);
+
+
+  } finally {
+    client_count1.close();
+  }
 });
 
 module.exports = {
