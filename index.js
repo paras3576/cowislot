@@ -120,13 +120,13 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
 
       if (db_remove_email == remove_email && db_remove_pin == remove_pin && db_remove_age == remove_age) {
 
-        user_data_remove = {
-          Email: db_remove_email,
-          Pin: db_remove_pin,
-          Mob: db_remove_mob,
-          Age: db_remove_age,
-          Dose: db_remove_dose
-        };
+        // user_data_remove = {
+        //   Email: db_remove_email,
+        //   Pin: db_remove_pin,
+        //   Mob: db_remove_mob,
+        //   Age: db_remove_age,
+        //   Dose: db_remove_dose
+        // };
 
         var age_email;
         if (remove_age == 18) {
@@ -139,12 +139,12 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
           to: remove_email,
           subject: 'Cowislot UnSubscription Successful',
           text: 'Dear User,\n\n You are successfully unsubscribed to the email alerts for the vaccine availability at the requested pincode-' + remove_pin + ' and age group:' + age_email + '.\n' +
-            'Thank you for the connection we had and we hope to get connected again soon.Stay Safe!' + '\n\n\n Happy To Help,\n Cowislot Team.'
+            'Thank you for the connection we had and we hope to get connected again soon.\n\nPlease do let us know if were able to help you in booking your vaccine slot.\nStay Safe!' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
         };
 
 
-        const del = await db.collection('user_data').removeMany(user_data_remove);
+        const del = await db.collection('user_data').removeMany({Email:db_remove_email,Pin:db_remove_pin,Age:db_remove_age});
         //console.log("Del"+del);
 
         if (del) {
@@ -237,6 +237,7 @@ app.get('/vaccine/:pind', async (request, response) => {
   const email = pind[2];
   const age = pind[3];
   const dose = pind[4];
+  console.log("Dose: "+dose);
 
   const client2 = await MongoClient.connect(uri, {
     useNewUrlParser: true,
@@ -647,11 +648,75 @@ app.get('/updateDose', async (request, response) => {
     var dbFind_upd;
     var upd_count = 0;
     for (dbFind_upd = 0; dbFind_upd < db_data_upd.length; dbFind_upd++) {
-      const db_update_dose = await db_count1.collection('user_data').updateMany({}, {
-        $set: {
-          Dose: "both"
-        }
-      });
+      const email_db=db_data_upd[dbFind_upd].Email;
+      const pin_db=db_data_upd[dbFind_upd].Pin;
+      const age_db=db_data_upd[dbFind_upd].Age;
+
+    //   if(email_db=="paras.moveon@gmail.com" && pin_db=="110093"){
+    //     const rem=await db_count1.collection('user_data').deleteMany({Email:email_db,Pin:pin_db,Age:age_db});
+    //     if(rem){
+    //       console.log("Removed successfully"+rem);
+    //     }
+    //       else{
+    //         console.log("error in removing");
+    //       }
+    //
+    //   // const db_update_dose = await db_count1.collection('user_data').updateMany({}, {
+    //   //   $set: {
+    //   //     Dose: "both"
+    //   //   }
+    //   // });
+    //   upd_count++;
+    // }
+    }
+    console.log(upd_count);
+
+
+  } finally {
+    client_count1.close();
+  }
+});
+
+app.get('/alertUsers', async (request, response) => {
+  console.log("Sending info to users ");
+
+  const client_count1 = await MongoClient.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+
+  const db_count1 = client_count1.db('cowislot_app');
+
+  try {
+    const db_data_upd = await db_count1.collection('user_data').find({}).toArray();
+    console.log(db_data_upd.length);
+    var dbFind_upd;
+    var upd_count = 0;
+
+    for (dbFind_upd = 0; dbFind_upd < db_data_upd.length; dbFind_upd++) {
+      const email_db=db_data_upd[dbFind_upd].Email;
+      mailOptions_users = {
+        from: email_from,
+        to: email_db,
+        subject: 'Cowislot Dose Selection',
+        text: 'Dear User,\n\nThank you so much for believing in us and being a part of Cowislot Community.As per the feedback received from our lovely users, we have now included an option to choose a Dose(Dose1 or Dose2) for the vaccine you registered for on the website.'+'\n'+
+          'This will help you to avoid unnecessary emails and only get an alert when the dose you are looking for is available.' + '\n\nWhat do you need to do? Please visit the website link- https://cowislot.herokuapp.com and enter the same details you entered before(this time with Dose1 or Dose2) and Subscribe.We will update the entries for you.\n***Applicable to only users who subscribed before the Dose option was available***\nPlease feel free to shoot us any questions.' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+      };
+
+        (async () => {
+          try {
+            await sgMail.send(mailOptions_users);
+          } catch (error) {
+            console.error(error);
+
+            if (error.response) {
+              console.error(error.response.body)
+            }
+          }
+        })();
+      
+
       upd_count++;
     }
     console.log(upd_count);
