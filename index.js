@@ -445,7 +445,7 @@ async function scheduleEmail() {
 
       const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
       //  try {
-      console.log(api_url);
+      //console.log(api_url);
       const fetch_response = await fetch(api_url, {
         headers: meta,
         method: 'GET'
@@ -543,7 +543,7 @@ async function scheduleEmail() {
         }
 
         //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
-        console.log(availability);
+        //console.log(availability);
         if (availability.length > 0) {
 
           var data_mail = '';
