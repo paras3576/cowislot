@@ -21,14 +21,18 @@
 		<input type="email" name="email" id="email" placeholder="Email Id">
 		<p>Age_Limit</p>
 		<select id="Age_Limit" name="Age_Limit" placeholder="Age-Limit">
-		<option value="" selected disabled hidden>Choose Value</option>
+		<option value="" selected disabled hidden>Choose Age</option>
 		<option value="18">18-45</option>
 		<option value="45">45+</option>
-		</select><br><br>
+		</select><br>
 
-		<p><input type="radio" id="Dose1" name="dose" value="Dose1">Dose1</p>
-		<p><input type="radio" id="Dose2" name="dose" value="Dose2">Dose2</p>
-
+		<p><input type="radio" id="Dose1" name="dose" value="Dose1" onclick="disableCheck()">Dose1</p>
+		<p><input type="radio" id="Dose2" name="dose" value="Dose2" onclick="disableCheck()">Dose2</p>
+		<select id="Vaccine" name="Vaccine" placeholder="Vaccine" disabled="disabled">
+		<option value="" selected disabled hidden>Choose Vaccine For Dose2</option>
+		<option value="COVAXIN">Covaxin</option>
+		<option value="COVISHIELD">Covishield</option>
+		</select><br>
 
 		<p>Mobile No (Optional)<p>
 		<div class="alert_msg">(Do not enter any pefix like +91 or 0)</div><br>
@@ -69,11 +73,24 @@
 
 }
 
+	function disableCheck(){
+		var x=document.getElementById("Vaccine");
+		if(document.getElementById('Dose1').checked){
+			  x.disabled=true;
+		}
+		else if(document.getElementById('Dose2').checked){
+			  x.disabled=false;
+		}
+
+					return;
+	}
+
 
 	function validateData(email,mob,dose){
-		var valid=1,ind1=1,ind2=1,ind3=1;
+		var valid=1,ind1=1,ind2=1,ind3=1,ind4=1;
 		var mailformat = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 		var mob_format=/^\d{10}$/;
+		var vaccine=document.getElementById("Vaccine").value;
 
 		if(!(email.match(mailformat))){
 			document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a valid email address</span>";
@@ -90,7 +107,12 @@
 				ind3=0;
 			}
 
-		if(ind1==0 || ind2==0 || ind3==0){
+			else if(dose=="Dose2" && vaccine==""){
+				document.getElementById('message').innerHTML="<span style='color: red;'>Please select a vaccine for Dose2</span>";
+				ind4=0;
+			}
+
+		if(ind1==0 || ind2==0 || ind3==0||ind4==0){
 			valid=0;
 		}
 		return valid;
@@ -184,6 +206,8 @@
 			dose=document.getElementById('Dose2').value;
 		}
 		console.log(dose);
+		const vaccine=document.getElementById("Vaccine").value;
+		console.log(vaccine=="");
 		var today = new Date();
 		var month_today=(today.getMonth()+1);
 		//console.log(month_today);
@@ -197,7 +221,7 @@
 		//console.log('Valid:'+valid);
 		if(valid==1){
 		//const api_url='https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode='+pin+'&date='+date1;
-		const api_url=`vaccine/${pin},${mob},${email},${age},${dose}`;
+		const api_url=`vaccine/${pin},${mob},${email},${age},${dose},${vaccine}`;
 		console.log(document.getElementById('pin').value);
 		//console.log(document.getElementById('date').value);
 		console.log(date_today);
@@ -215,6 +239,7 @@
 
 		if(color=='red'){
 		document.getElementById('message').innerHTML="<span style='color: red;'>"+data1.message+"</span>";
+		document.getElementById('Vaccine').value='';
 		}
 		else{
 		document.getElementById('message').innerHTML="<span style='color: white;'>"+data1.message+"</span>";
@@ -222,6 +247,7 @@
 		document.getElementById('email').value='';
 		document.getElementById('Age_Limit').value='';
 		document.getElementById('mobile').value='';
+		document.getElementById('Vaccine').value='';
 		}
 		}
 		else{

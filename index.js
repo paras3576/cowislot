@@ -237,7 +237,10 @@ app.get('/vaccine/:pind', async (request, response) => {
   const email = pind[2];
   const age = pind[3];
   const dose = pind[4];
+  const vaccine=pind[5];
+
   console.log("Dose: "+dose);
+  console.log("Vaccine"+vaccine);
 
   const client2 = await MongoClient.connect(uri, {
     useNewUrlParser: true,
@@ -257,11 +260,15 @@ app.get('/vaccine/:pind', async (request, response) => {
       db_mob = db_data[dbFind].Mob;
       db_age = db_data[dbFind].Age;
       db_dose = db_data[dbFind].Dose;
+      db_vaccine=db_data[dbFind].Vaccine;
+
+
 
 
       if (db_email == email && db_pin == pin && db_age == age) {
         console.log(db_dose);
         if (db_dose == dose) {
+          if(dose=="Dose1"){
           console.log('You are already subscribed ' + email);
           response.json({
             color: 'red',
@@ -269,6 +276,16 @@ app.get('/vaccine/:pind', async (request, response) => {
           });
           found = 1;
           break;
+        }
+        else if(dose=="Dose2" && vaccine==db_vaccine){
+          console.log('You are already subscribed ' + email);
+          response.json({
+            color: 'red',
+            message: 'You are already subscribed!!'
+          });
+          found = 1;
+          break;
+        }
         } else if (db_dose == "both") {
           console.log("Inside update");
           const upd = await db2.collection('user_data').updateOne({
@@ -292,6 +309,8 @@ app.get('/vaccine/:pind', async (request, response) => {
     }
 
     if (found == 0 || found == 2) {
+
+      if(vaccine==""){
       user_data = {
         Email: email,
         Pin: pin,
@@ -299,12 +318,25 @@ app.get('/vaccine/:pind', async (request, response) => {
         Age: age,
         Dose: dose
       };
+    }
+      else if(vaccine!=""){
+        user_data = {
+          Email: email,
+          Pin: pin,
+          Mob: mob,
+          Age: age,
+          Dose: dose,
+          Vaccine: vaccine
+        };
+      }
       var email_age1;
       if (age == 18) {
         email_age1 = '18-45';
       } else {
         email_age1 = '45+';
       }
+
+      if(vaccine==""){
       mailOptions_subscribe = {
         from: email_from,
         to: email,
@@ -313,6 +345,17 @@ app.get('/vaccine/:pind', async (request, response) => {
           'We will send you timely alerts about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
       };
+    }
+    else if(vaccine!=""){
+      mailOptions_subscribe = {
+        from: email_from,
+        to: email,
+        subject: 'Cowislot Subscription Successful',
+        text: 'Dear User,\n\n You are successfully subscribed to the email alerts for the vaccine availability at the requested pincode-' + pin + ' , Age group:' + email_age1 + ' , Dose: ' + dose + ' and Vaccine:' + vaccine +'.\n' +
+          'We will send you timely alerts about the available doses once they come in stock.\n\nPlease check your emails regularly and please let us know in case of any issues' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+      };
+    }
 
       if (found == 0) {
         const items = await db2.collection('user_data').insertOne(user_data);
@@ -398,10 +441,11 @@ async function scheduleEmail() {
       pin_db = data[dbCounter].Pin;
       age_db = data[dbCounter].Age;
       dose_db = data[dbCounter].Dose;
-
+      vaccine_db=data[dbCounter].Vaccine;
 
       const api_url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pin_db}&date=${date_today}`;
       //  try {
+      console.log(api_url);
       const fetch_response = await fetch(api_url, {
         headers: meta,
         method: 'GET'
@@ -475,7 +519,7 @@ async function scheduleEmail() {
                     Available: [Available_capacity_Dose1, Available_capacity_Dose2]
                   });
                 }
-              } else if (Available_capacity_Dose2 > 0 && Age_Limit == age_db && dose_db == 'Dose2') {
+              } else if (Available_capacity_Dose2 > 0 && Age_Limit == age_db && dose_db == 'Dose2' && vaccine_db==Vaccine) {
                 //console.log("inside Dose2");
                 match = 0;
                 for (iter = 0; iter < availability.length; iter++) {
@@ -499,7 +543,7 @@ async function scheduleEmail() {
         }
 
         //console.log('Availability for user '+email_db+'age'+age_db+'pin:'+pin_db);
-        //console.log(availability);
+        console.log(availability);
         if (availability.length > 0) {
 
           var data_mail = '';
@@ -522,6 +566,18 @@ async function scheduleEmail() {
                 'Available_Dose2: ' + availability[data_counter].Available[1] + '\n\n';
             }
           }
+
+          if(dose_db=="Dose2"){
+          mailOptions = {
+            from: email_from,
+            to: email_db,
+            subject: 'Vaccine Available Alert',
+            text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + ' for Vaccine '+vaccine_db+'.The details are as below:\n\n' + data_mail +
+              'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+
+          };
+        }
+        else{
           mailOptions = {
             from: email_from,
             to: email_db,
@@ -530,15 +586,16 @@ async function scheduleEmail() {
               'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
           };
+        }
 
-          mailOptions_outlook = {
-            from: "cowislot@outlook.com",
-            to: email_db,
-            subject: 'Vaccine Available Alert',
-            text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
-              'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
-
-          };
+          // mailOptions_outlook = {
+          //   from: "cowislot@outlook.com",
+          //   to: email_db,
+          //   subject: 'Vaccine Available Alert',
+          //   text: 'Dear User,\n\n Vaccine is available now at your pincode-' + PinCode + '.The details are as below:\n\n' + data_mail +
+          //     'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+          //
+          // };
           ///commenting temporary for using outlook functionality
           // transporter.sendMail(mailOptions, function(err, data) {
           //   if (err) {
@@ -585,7 +642,7 @@ async function scheduleEmail() {
           //   }
           // });
 
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          //await new Promise(resolve => setTimeout(resolve, 2000));
           alertCounter++;
 
         }
@@ -620,8 +677,10 @@ app.get('/count', async (request, response) => {
   const db_count = client_count.db('cowislot_app');
 
   try {
-    const db_count_data = await db_count.collection('user_data').countDocuments();
+    const db_count_data = await db_count.collection('user_data').countDocuments({Dose:"both"});
+    const db_data_upd = await db_count.collection('user_data').find({Dose:"Dose2"}).toArray();
     console.log(db_count_data);
+    console.log(db_data_upd.length);
 
     response.json({
       count: db_count_data
@@ -688,22 +747,31 @@ app.get('/alertUsers', async (request, response) => {
   const db_count1 = client_count1.db('cowislot_app');
 
   try {
-    const db_data_upd = await db_count1.collection('user_data').find({}).toArray();
+    const db_data_upd = await db_count1.collection('user_data').find({Dose:"Dose2"}).toArray();
     console.log(db_data_upd.length);
     var dbFind_upd;
     var upd_count = 0;
 
     for (dbFind_upd = 0; dbFind_upd < db_data_upd.length; dbFind_upd++) {
       const email_db=db_data_upd[dbFind_upd].Email;
+      //if(email_db=="paras.moveon@gmail.com"){
+      // mailOptions_users = {
+      //   from: email_from,
+      //   to: email_db,
+      //   subject: 'Cowislot Dose Selection',
+      //   text: 'Dear User,\n\nThank you so much for believing in us and being a part of Cowislot Community.As per the feedback received from our lovely users, we have now included an option to choose a Dose(Dose1 or Dose2) for the vaccine you registered for on the website.'+'\n'+
+      //     'This will help you to avoid unnecessary emails and only get an alert when the dose you are looking for is available.' + '\n\nWhat do you need to do? Please visit the website link- https://cowislot.herokuapp.com and enter the same details you entered before(this time with Dose1 or Dose2) and Subscribe.We will update the entries for you.\n***Applicable to only users who subscribed before the Dose option was available***\nPlease feel free to shoot us any questions.' + '\n\n\n Happy To Help,\n Cowislot Team.'
+      //
+      // };
       mailOptions_users = {
         from: email_from,
         to: email_db,
-        subject: 'Cowislot Dose Selection',
-        text: 'Dear User,\n\nThank you so much for believing in us and being a part of Cowislot Community.As per the feedback received from our lovely users, we have now included an option to choose a Dose(Dose1 or Dose2) for the vaccine you registered for on the website.'+'\n'+
-          'This will help you to avoid unnecessary emails and only get an alert when the dose you are looking for is available.' + '\n\nWhat do you need to do? Please visit the website link- https://cowislot.herokuapp.com and enter the same details you entered before(this time with Dose1 or Dose2) and Subscribe.We will update the entries for you.\n***Applicable to only users who subscribed before the Dose option was available***\nPlease feel free to shoot us any questions.' + '\n\n\n Happy To Help,\n Cowislot Team.'
+        subject: 'Cowislot Vaccine Selection For Dose2',
+        text: 'Dear User,\n\nThank you so much for believing in us and being a part of Cowislot Community.As per the feedback received from our lovely users, we have now included an option to choose a vaccine type for the Dose2 you registered for on the website.'+'\n'+
+          'This will help you to avoid unnecessary emails and only get an alert when the exact vaccine you are looking for is available.' + '\n\nWhat do you need to do??? Just reply to this email with the Vaccine type you are looking for Dose2-\nCovaxin or Covishield \n\nWe will update the entry for you.\nPlease feel free to shoot us any questions.' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
       };
-
+      console.log("sending mail to : " + email_db);
         (async () => {
           try {
             await sgMail.send(mailOptions_users);
@@ -715,10 +783,11 @@ app.get('/alertUsers', async (request, response) => {
             }
           }
         })();
-      
+
 
       upd_count++;
-    }
+    //}
+  }
     console.log(upd_count);
 
 
