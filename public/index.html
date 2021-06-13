@@ -76,7 +76,8 @@
 	function disableCheck(){
 		var x=document.getElementById("Vaccine");
 		if(document.getElementById('Dose1').checked){
-			  x.disabled=true;
+				x.value="";
+				x.disabled=true;
 		}
 		else if(document.getElementById('Dose2').checked){
 			  x.disabled=false;
