@@ -5,7 +5,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 
 	</head>
-	<body>
+	<body onload="onloadFunction()">
 
 	<div class="registration-space">
 
@@ -15,8 +15,59 @@
 
 	<h2>Get Notified for Vaccine Availability, So Easily !</h2><br>
 	<form name="passpin" action="#" method="post">
+		<button type="button" id="togglebuttonPin" name="Toggle" onclick="toggleCheckPin()">Register By District</button>
+		<button type="button" id="togglebuttonDistrict" name="Toggle" onclick="toggleCheckDistrict()">Register By Pin</button>
+		<div id="district">
+		<p>State:<p>
+			<select id="StateSelect" name="StateSelect" placeholder="State" onchange="selectDistrict(this.value)">
+			<option value="" selected disabled hidden>Select State</option>
+			<option value="1">Andaman and Nicobar Islands</option>
+			<option value="2">Andhra Pradesh</option>
+			<option value="3">Arunachal Pradesh</option>
+			<option value="4">Assam</option>
+			<option value="5">Bihar</option>
+			<option value="6">Chandigarh</option>
+			<option value="7">Chhattisgarh</option>
+			<option value="8">Dadra and Nagar Haveli</option>
+			<option value="37">Daman and Diu</option>
+			<option value="9">Delhi</option>
+			<option value="10">Goa</option>
+			<option value="11">Gujarat</option>
+			<option value="12">Haryana</option>
+			<option value="13">Himachal Pradesh</option>
+			<option value="14">Jammu and Kashmir</option>
+			<option value="15">Jharkhand</option>
+			<option value="16">Karnataka</option>
+			<option value="17">Kerala</option>
+			<option value="18">Ladakh</option>
+			<option value="19">Lakshadweep</option>
+			<option value="20">Madhya Pradesh</option>
+			<option value="21">Maharashtra</option>
+			<option value="22">Manipur</option>
+			<option value="23">Meghalaya</option>
+			<option value="24">Mizoram</option>
+			<option value="25">Nagaland</option>
+			<option value="26">Odisha</option>
+			<option value="27">Puducherry</option>
+			<option value="28">Punjab</option>
+			<option value="29">Rajasthan</option>
+			<option value="30">Sikkim</option>
+			<option value="31">Tamil Nadu</option>
+			<option value="32">Telangana</option>
+			<option value="33">Tripura</option>
+			<option value="34">Uttar Pradesh</option>
+			<option value="35">Uttarakhand</option>
+			<option value="36">West Bengal</option>
+			</select>
+			<p>District:<p>
+				<select id="DistSelect" name="DistSelect" placeholder="District" disabled="disabled">
+				<option value="" selected disabled hidden>Select District</option>
+				<option></option>
+			</select></div>
+			<div id="pincode">
 		<p>PinCode:</p>
 		<input type="text" name="pincode" id="pin" placeholder="Pincode">
+	</div>
 		<p>Email:</p>
 		<input type="email" name="email" id="email" placeholder="Email Id">
 		<p>Age_Limit</p>
@@ -60,6 +111,38 @@
 	</div>
 	<script>
 
+
+	function onloadFunction(){
+		console.log("Loading page");
+		var div = document.getElementById('district');
+		var div2 = document.getElementById('pincode');
+		div.style.display = 'none';
+		div2.style.display = 'block';
+	}
+
+
+	function toggleCheckPin() {
+    var div = document.getElementById('pincode');
+		var div2 = document.getElementById('district');
+		var btnPin=document.getElementById("togglebuttonPin");
+		var btnDistrict=document.getElementById("togglebuttonDistrict");
+    div.style.display = 'none';
+		div2.style.display = 'block';
+		btnPin.style.backgroundColor="#F08080";
+		btnDistrict.style.backgroundColor="";
+};
+
+function toggleCheckDistrict() {
+	var div = document.getElementById('district');
+	var div2 = document.getElementById('pincode');
+	var btnPin=document.getElementById("togglebuttonPin");
+	var btnDistrict=document.getElementById("togglebuttonDistrict");
+	div.style.display = 'none';
+	div2.style.display = 'block';
+	btnPin.style.backgroundColor="";
+	btnDistrict.style.backgroundColor="#F08080";
+};
+
 	async function displayCount(){
 
 		const count_url=`count/`;
@@ -72,6 +155,31 @@
 		document.getElementById('user_count').style.boxShadow = "10px 20px 30px white";
 
 }
+
+
+	async function selectDistrict(value){
+		document.getElementById("DistSelect").disabled=true;
+		var i,distOptions="";
+		console.log(value);
+
+		const district_url=`district/${value}`
+		console.log(district_url);
+
+		const response = await fetch(district_url);
+		const district_data = await response.json();
+		//console.log(district_data);
+
+		for(i=0;i<district_data.length;i++){
+			dist_id=district_data[i].District_Id;
+			dist_name=district_data[i].District_Name;
+			distOptions+="<option value="+dist_id+">"+dist_name+"</option>";
+		}
+		if(distOptions!=""){
+		document.getElementById("DistSelect").innerHTML = distOptions;
+			document.getElementById("DistSelect").disabled=false;
+	}
+	}
+
 
 	function disableCheck(){
 		var x=document.getElementById("Vaccine");
@@ -119,7 +227,7 @@
 		return valid;
 	}
 
-	function validateDataRemove(email,pin){
+	function validateDataRemove(email){
 		var valid=1,ind1=1,ind2=1,ind3=1;
 		var mailformat = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 		var mob_format=/^\d{10}$/;
@@ -129,12 +237,12 @@
 			ind1=0;
 		}
 
-			else if(pin==undefined){
-				document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a pin</span>";
-				ind3=0;
-			}
+			// else if(pin==undefined){
+			// 	document.getElementById('message').innerHTML="<span style='color: red;'>Please enter a pin</span>";
+			// 	ind3=0;
+			// }
 
-		if(ind1==0 || ind3==0){
+		if(ind1==0){
 			valid=0;
 		}
 		return valid;
@@ -164,10 +272,10 @@
 		const remove_url=`unsubscribe/${pin},${mob},${email},${age},${dose}`
 		console.log(remove_url);
 
-		var valid=validateDataRemove(email,pin);
+		var valid=validateDataRemove(email);
 		console.log('Valid:'+valid);
 		if(valid==1){
-		if(pin!='' && email!='' && age!=''){
+		if(email!='' && age!=''){
 		const response = await fetch(remove_url);
 		const data_remove = await response.json();
 		console.log(data_remove.message)
@@ -185,7 +293,7 @@
 		}
 		}
 		else{
-		document.getElementById('message').innerHTML="<span style='color: red;'>**Please fill your Email, Pin & Age</span>";
+		document.getElementById('message').innerHTML="<span style='color: red;'>**Please fill your Email & Age</span>";
 		}
 		}
 	}
@@ -193,6 +301,14 @@
 
 	async function getVaccineDetails(){
 		//console.log('inside function');
+		const dist=document.getElementById("DistSelect").value;
+
+
+
+		console.log(dist=="");
+
+		if(dist==""){
+
 		const pin=document.getElementById('pin').value;
 		const mob=document.getElementById('mobile').value;
 		//const date=document.getElementById('date').value;
@@ -257,7 +373,75 @@
 		//const data1 = await response.json();
 		//console.log(data1);
 		}
+	}
+	else{
+		console.log("district handle");
+		const x=document.getElementById("DistSelect");
+		const dist_name=x.options[x.selectedIndex].text;
+		console.log("District selected "+dist_name);
+		const mob=document.getElementById('mobile').value;
+		//const date=document.getElementById('date').value;
+		//const date1= date.substring(8,10)+'-'+date.substring(5,7)+'-'+date.substring(0,4);
+		const email=document.getElementById('email').value;
+		const age=document.getElementById('Age_Limit').value;
+		var dose;
+		if(document.getElementById('Dose1').checked){
+			dose=document.getElementById('Dose1').value;
 		}
+		else if(document.getElementById('Dose2').checked){
+			dose=document.getElementById('Dose2').value;
+		}
+		console.log(dose);
+		const vaccine=document.getElementById("Vaccine").value;
+		console.log("Vaccine null"+vaccine=="");
+		var today = new Date();
+		var month_today=(today.getMonth()+1);
+		//console.log(month_today);
+		if((month_today.toString().length)<2){
+			month_today="0"+month_today.toString();
+		}
+		console.log(month_today);
+		var date_today = today.getDate()+'-'+month_today+'-'+today.getFullYear();
+
+		var valid=validateData(email,mob,dose);
+
+		if(valid==1){
+		//const api_url='https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode='+pin+'&date='+date1;
+		const api_url=`vaccine_dist/${dist},${mob},${email},${age},${dose},${vaccine},${dist_name}`;
+		//console.log(document.getElementById('pin').value);
+		//console.log(document.getElementById('date').value);
+		console.log(date_today);
+		console.log(api_url);
+		//console.log(pin=='');
+		console.log(email=='');
+		console.log(age=='');
+		console.log(date_today=='');
+
+		if(dist!='' && email!='' && age!=''){
+		const response = await fetch(api_url);
+		const data1 = await response.json();
+		console.log(data1.message)
+		color=data1.color;
+
+		if(color=='red'){
+		document.getElementById('message').innerHTML="<span style='color: red;'>"+data1.message+"</span>";
+		document.getElementById('Vaccine').value='';
+		}
+		else{
+		document.getElementById('message').innerHTML="<span style='color: white;'>"+data1.message+"</span>";
+		document.getElementById("DistSelect").value="";
+		document.getElementById('email').value='';
+		document.getElementById('Age_Limit').value='';
+		document.getElementById('mobile').value='';
+		document.getElementById('Vaccine').value='';
+		}
+	}
+	else{
+	document.getElementById('message').innerHTML="<span style='color: red;'>**Please fill in all the details</span>";
+	}
+		}
+	}
+}
 	</script>
 	</body>
 </html>
