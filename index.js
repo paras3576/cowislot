@@ -467,6 +467,19 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
               }
             } else if (db_dose == "both") {
               console.log("Inside update");
+              if(dose=="Dose2"){
+              const upd = await db2.collection('user_data').updateOne({
+                Email: db_email,
+                Pin: db_pin,
+                Age: db_age
+              }, {
+                $set: {
+                  Dose: dose,
+                  Vaccine:vaccine
+                }
+              });
+            }
+            else if(dose=="Dose1"){
               const upd = await db2.collection('user_data').updateOne({
                 Email: db_email,
                 Pin: db_pin,
@@ -476,6 +489,7 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
                   Dose: dose
                 }
               });
+            }
               found = 2;
               if (upd) {
                 console.log("Updated dose successfully for " + db_email);
