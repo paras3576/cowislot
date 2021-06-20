@@ -475,9 +475,17 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
               }, {
                 $set: {
                   Dose: dose,
-                  Vaccine:vaccine
+                  Vaccine:vaccine,
+                  Status:"1"
                 }
               });
+              found = 2;
+              if (upd) {
+                console.log("Updated dose successfully for " + db_email);
+
+              } else {
+                console.log("Error updating" + email);
+              }
             }
             else if(dose=="Dose1"){
               const upd = await db2.collection('user_data').updateOne({
@@ -486,10 +494,10 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
                 Age: db_age
               }, {
                 $set: {
-                  Dose: dose
+                  Dose: dose,
+                  Status:"1"
                 }
               });
-            }
               found = 2;
               if (upd) {
                 console.log("Updated dose successfully for " + db_email);
@@ -497,6 +505,8 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
               } else {
                 console.log("Error updating" + email);
               }
+            }
+
             }
           }
         }
