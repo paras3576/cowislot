@@ -87,6 +87,66 @@ app.use(cors());
 
 
 
+app.get('/validEmail/:review_email', async (request, response) => {
+  const review_params = request.params.review_email.split(',');
+  const review_email=review_params[0];
+  const review=review_params[1];
+  const star=review_params[2];
+  console.log(review_email);
+
+  const client = await MongoClient.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+
+  const db = client.db('cowislot_app');
+
+  try {
+  const db_data = await db.collection('user_data').find({
+    Email: review_email
+  }).toArray();
+
+  var dbFind,db_email,found=0;
+
+  var review_data={
+    Email:review_email,
+    Star:star,
+    Review:review
+  }
+  for (dbFind = 0; dbFind < db_data.length; dbFind++) {
+    db_email=db_data[dbFind].Email;
+
+    if(db_email==review_email){
+      console.log(review_email+" giving review");
+
+      const items = await db.collection('review_data').insertOne(review_data);
+
+      if (items) {
+        console.log("Successfully inserted review " + review_email);
+      } else {
+        console.log("Error inserting review");
+      }
+      response.json({
+        color: 'green',
+        message: 'Thanks for reviewing!!'
+      });
+      found=1;
+      break;
+    }
+  }
+
+  if(found==0){
+    console.log("You are not yet subscribed");
+    response.json({
+      color: 'red',
+      message: 'You are not yet subscribed!!'
+    });
+}
+}finally{
+  client.close();
+  console.log("Connection closed in review");
+}
+});
 
 app.get('/district/:state_code', async (request, response) => {
   const state_code = request.params.state_code;
@@ -782,7 +842,7 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
                   to: email_db,
                   subject: 'Vaccine Available Alert',
                   text: 'Dear User,\n\n Vaccine is available now at your district-' + district_name_db + ' for Vaccine ' + vaccine_db + '.The details are as below:\n\n' + data_mail +
-                    'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your Email and Age and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+                    'Please book your slots fast on Cowin website- https://www.cowin.gov.in/home before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your Email and Age and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
                 };
               } else {
@@ -791,7 +851,7 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
                   to: email_db,
                   subject: 'Vaccine Available Alert',
                   text: 'Dear User,\n\n Vaccine is available now at your district-' + district_name_db + '.The details are as below:\n\n' + data_mail +
-                    'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your Email and Age and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+                    'Please book your slots fast on Cowin website- https://www.cowin.gov.in/home before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your Email and Age and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
                 };
               }
@@ -994,7 +1054,7 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
               to: email_db,
               subject: 'Vaccine Available Alert',
               text: 'Dear User,\n\n Vaccine is available now at your pincode-' + pin_db + ' for Vaccine ' + vaccine_db + '.The details are as below:\n\n' + data_mail +
-                'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+                'Please book your slots fast on Cowin website- https://www.cowin.gov.in/home before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
             };
           } else {
@@ -1003,7 +1063,7 @@ app.get('/vaccine_dist/:pind', async (request, response) => {
               to: email_db,
               subject: 'Vaccine Available Alert',
               text: 'Dear User,\n\n Vaccine is available now at your pincode-' + pin_db + '.The details are as below:\n\n' + data_mail +
-                'Please book your slots fast on Cowin website before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
+                'Please book your slots fast on Cowin website- https://www.cowin.gov.in/home before they get booked' + '\n\nAlready vaccinated? You can unsubscribe to the alerts by filling in your details and pressing unsubscribe on the website link- https://cowislot.herokuapp.com' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
             };
           }
