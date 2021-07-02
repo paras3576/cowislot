@@ -88,7 +88,8 @@ app.use(cors());
 
 
 app.get('/validEmail/:review_email', async (request, response) => {
-  const review_params = request.params.review_email.split(':');
+  const review_params1 = decodeURI(request.params.review_email);
+  const review_params=review_params1.split(':');
   const review_email=review_params[0];
   const review=review_params[1];
   const star=review_params[2];
