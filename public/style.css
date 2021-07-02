@@ -16,10 +16,11 @@ body{
 }
 
 .registration-form{
-	flex:0.6;
+	flex:0.9;
 	font-size:18px;
 	margin-left:10%;
 	margin-top:35px;
+	max-width: 650px;
 }
 
 
@@ -51,7 +52,7 @@ body{
 
 .feedback{
 	margin: auto;
-	margin-top: 150%;
+	margin-top: 150px;
 	margin-left:60%
 }
 

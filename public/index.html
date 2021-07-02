@@ -15,17 +15,23 @@
 	<div class="review-show">
 		<div class="carausel" data-flickity='{"wrapAround": true, "autoPlay": true}'>
 			<!-- <div class="caraousel-cell"> -->
-				<img class="w3-image" src="review6_1.jpg" width="500" height="400">
+				<img class="w3-image" src="booking_slip.jpg" width="500" height="400">
 			<!-- </div> -->
 			<!-- <div class="caraousel-cell"> -->
-				<img class="w3-image" src="review7.jpg" width="400" height="200">
+				<img class="w3-image" src="gurgaon.jpg" width="400" height="200">
 			<!-- </div> -->
 			<!-- <div class="caraousel-cell"> -->
-				<img class="w3-image" src="review_4.jpg" width="400" height="200">
+					<img class="w3-image" src="bangalore.jpg" width="400" height="200">
+				<img class="w3-image" src="meerut.jpg" width="400" height="200">
 			<!-- </div> -->
 			<!-- <div class="caraousel-cell"> -->
-				<img class="w3-image" src="review8_1.jpg" width="400" height="200">
+
 			<!-- </div> -->
+			<img class="w3-image" src="ranchi.jpg" width="395" height="150">
+
+			<img class="w3-image" src="gujarat.jpg" width="395" height="200">
+
+			<img class="w3-image" src="pune.jpg" width="395" height="200">
 		</div>
 	</div>
 
@@ -123,8 +129,8 @@
 		</div>
 
 		<div class="extra-details" align="center">
+			<br>
 			<h2>Rate your experience!!</h2>
-
 			<div class="container">
 				<div class="post" id="post">
 					<div class="text"> Thanks for rating us!</div>
@@ -218,7 +224,8 @@
 				star=5;
 			}
 			console.log("star "+star);
-			const review_url = `validEmail/${review_email},${review},${star}`;
+			if(star!=undefined && review_email!='' && review!=''){
+			const review_url = `validEmail/${review_email}:${review}:${star}`;
 			console.log(review_url);
 			const response_review = await fetch(review_url);
 			 const data_review =  await response_review.json();
@@ -235,6 +242,11 @@
 			console.log("Not yet subscribed");
 			document.getElementById('reviewStatus').innerHTML = "<span style='color: red;'>You are not yet subscribed</span>";
 		}
+	}
+	else{
+		console.log("Please fill all details");
+		document.getElementById('reviewStatus').innerHTML = "<span style='color: red;'>Please fill alll details</span>";
+	}
 }
 
 
