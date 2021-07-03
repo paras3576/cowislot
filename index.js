@@ -221,7 +221,7 @@ app.all('/unsubscribe/:remove_params', async (request, response) => {
           to: remove_email,
           subject: 'Cowislot UnSubscription Successful',
           text: 'Dear User,\n\n You are successfully unsubscribed to the email alerts for the vaccine availability of the age group-' + age_email + '.\n' +
-            'Thank you for the connection we had and we hope to get connected again soon.\n\nPlease do let us know if were able to help you in booking your vaccine slot.\nStay Safe!' + '\n\n\n Happy To Help,\n Cowislot Team.'
+            'Thank you for the connection we had .\n\nPlease do let us know if were able to help you in booking your vaccine slot.\nCan you please share a few words as a review for us at https://cowislot.herokuapp.com . We will be very grateful to you.\nStay Safe!' + '\n\n\n Happy To Help,\n Cowislot Team.'
 
         };
 
